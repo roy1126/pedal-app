@@ -30,6 +30,9 @@ class _HomePageState extends State<HomePage> {
       logoSize = minLogoSize;
     }
 
+    // Check if the device is a mobile device
+    bool isMobile = screenWidth < 600; // For example, consider screen widths below 600px as mobile
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -146,51 +149,93 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 20),
                         // Buttons for Create Account and Create Driver's Account aligned horizontally
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align buttons to the left and right
-                          children: [
-                            // Create Account Button
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, "/signup");  // This navigates to the Sign Up page
-                              },
-                              style: ElevatedButton.styleFrom(
-                                side: BorderSide(color: Colors.tealAccent[700]!, width: 1),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                        isMobile
+                            ? Column( // Stack buttons vertically for mobile
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, "/signup");  // This navigates to the Sign Up page
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      side: BorderSide(color: Colors.tealAccent[700]!, width: 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      "Create Account",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.tealAccent[700],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // Add logic for creating a driver's account
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      side: BorderSide(color: Colors.tealAccent[700]!, width: 1), // Border color tealAccent700
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      "Create Driver's Account",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.tealAccent[700], // Set text color to tealAccent700
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Row( // Display buttons side by side for larger screens
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Align buttons to the left and right
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, "/signup");  // This navigates to the Sign Up page
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      side: BorderSide(color: Colors.tealAccent[700]!, width: 1),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      "Create Account",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.tealAccent[700],
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // Add logic for creating a driver's account
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      side: BorderSide(color: Colors.tealAccent[700]!, width: 1), // Border color tealAccent700
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      "Create Driver's Account",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.tealAccent[700], // Set text color to tealAccent700
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: Text(
-                                "Create Account",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.tealAccent[700],
-                                ),
-                              ),
-                            ),
-                            // Create Driver's Account Button
-                            ElevatedButton(
-                              onPressed: () {
-                                // Add logic for creating a driver's account
-                              },
-                              style: ElevatedButton.styleFrom(
-                                side: BorderSide(color: Colors.tealAccent[700]!, width: 1), // Border color tealAccent700
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                              ),
-                              child: Text(
-                                "Create Driver's Account",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.tealAccent[700], // Set text color to tealAccent700
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
