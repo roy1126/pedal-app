@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_maps_flutter: ^2.2.3
+  file_picker: ^5.0.1
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -40,6 +43,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+ 
+
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -60,6 +65,8 @@ flutter:
   uses-material-design: true
   assets:
     - lib/assets/images/LOGO.png    
+    - lib/assets/images/car.png
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:
