@@ -1,0 +1,511 @@
+{
+  "users": [
+    {
+      "id": "0001",
+      "firstName": "John",
+      "lastName": "Smith",
+      "phoneNumber": "09123456789",
+      "address": "29 F. Cruz Santolan , Pasig City",
+      "email": "royabanilla@gmail.com",
+      "password": "pass1",
+      "isDriver": false,
+      "carDetails": {}
+    },
+    {
+      "id": "0002",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "phoneNumber": "09123456780",
+      "address": "15 Sunset Blvd, Makati City",
+      "email": "janedoe@example.com",
+      "password": "password123",
+      "isDriver": true,
+      "carDetails": {
+        "carId": 12345,
+        "licenseNumber": 987654321,
+        "insuranceValidity": "2025-12-31",
+        "documents": [
+          {
+            "value": "Registration Certificate",
+            "file": "registration_certificate.pdf"
+          },
+          {
+            "value": "Insurance Policy",
+            "file": "insurance_policy.pdf"
+          },
+          {
+            "value": "Emission Test Certificate",
+            "file": "emission_test_certificate.pdf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "0003",
+      "firstName": "Alice",
+      "lastName": "Brown",
+      "phoneNumber": "09123456781",
+      "address": "22 Maple St., Quezon City",
+      "email": "alicebrown@example.com",
+      "password": "alicepass123",
+      "isDriver": true,
+      "carDetails": {
+        "carId": 67890,
+        "licenseNumber": 123456789,
+        "insuranceValidity": "2026-06-15",
+        "documents": [
+          {
+            "value": "Registration Certificate",
+            "file": "registration_certificate_alice.pdf"
+          },
+          {
+            "value": "Insurance Policy",
+            "file": "insurance_policy_alice.pdf"
+          },
+          {
+            "value": "Emission Test Certificate",
+            "file": "emission_test_certificate_alice.pdf"
+          }
+        ]
+      }
+    },
+    {
+      "id": "0004",
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "phoneNumber": "09123456782",
+      "address": "101 Ocean View Road, Paranaque",
+      "email": "bobjohnson@example.com",
+      "password": "bobjohnson2024",
+      "isDriver": false,
+      "carDetails": {}
+    },
+    {
+      "id": "0005",
+      "firstName": "Charlie",
+      "lastName": "Davis",
+      "phoneNumber": "09123456783",
+      "address": "44 Pine Ave, Makati City",
+      "email": "charliedavis@example.com",
+      "password": "charlie1234",
+      "isDriver": true,
+      "carDetails": {
+        "carId": 11223,
+        "licenseNumber": 112233445,
+        "insuranceValidity": "2027-03-22",
+        "documents": [
+          {
+            "value": "Registration Certificate",
+            "file": "registration_certificate_charlie.pdf"
+          },
+          {
+            "value": "Insurance Policy",
+            "file": "insurance_policy_charlie.pdf"
+          },
+          {
+            "value": "Emission Test Certificate",
+            "file": "emission_test_certificate_charlie.pdf"
+          }
+        ]
+      }
+    }
+  ],
+  "booking": [
+    {
+      "driverId": "0006",
+      "customerId": "0001",
+      "isPwd": true,
+      "pwdType": "AGED",
+      "noteToDriver": "Pwede po patulong ako magbuhat ng gamit sa sasakyan.",
+      "dateCreated": "2024-11-29T14:30:00Z",
+      "dateCompleted": "",
+      "isActive": true,
+      "bookingStatus": "PICK-UP",
+      "distanceKM": 10.5,
+      "conversation": [
+        {
+          "messageId": "12353",
+          "senderId": "0001",
+          "isAutoReply": true,
+          "message": "Im on the way to pick you up. Just be there."
+        },
+        {
+          "messageId": "24342",
+          "senderId": "0001",
+          "isAutoReply": false,
+          "message": "Kuya pakinote po nung message ko"
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.5995,
+        "longitude": 120.9842,
+        "address": "Rizal Park, Ermita, Manila, Philippines",
+        "city": "Manila",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1000"
+      },
+      "destination": {
+        "latitude": 14.5995,
+        "longitude": 120.9842,
+        "address": "Rizal Park, Ermita, Manila, Philippines",
+        "city": "Manila",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1000"
+      }
+    },
+    {
+      "driverId": "0011",
+      "customerId": "0006",
+      "isPwd": true,
+      "pwdType": "MOBILE",
+      "noteToDriver": "Pakihulog po ang gamit sa may doorstep, salamat.",
+      "dateCreated": "2024-11-28T09:00:00Z",
+      "dateCompleted": "2024-11-28T09:45:00Z",
+      "isActive": false,
+      "bookingStatus": "COMPLETED",
+      "distanceKM": 6.7,
+      "conversation": [
+        {
+          "messageId": "12358",
+          "senderId": "0006",
+          "isAutoReply": true,
+          "message": "We have arrived at your destination. Please check the items."
+        },
+        {
+          "messageId": "24347",
+          "senderId": "0006",
+          "isAutoReply": false,
+          "message": "Thank you, Kuya! I appreciate it."
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.5565,
+        "longitude": 120.9985,
+        "address": "SM Fairview, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1121"
+      },
+      "destination": {
+        "latitude": 14.575,
+        "longitude": 121.0145,
+        "address": "Ayala Malls, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1100"
+      }
+    },
+    {
+      "driverId": "0012",
+      "customerId": "0007",
+      "isPwd": false,
+      "pwdType": "",
+      "noteToDriver": "Pakisigurado na lahat ng gamit ay nakuha.",
+      "dateCreated": "2024-11-28T11:30:00Z",
+      "dateCompleted": "2024-11-28T12:15:00Z",
+      "isActive": false,
+      "bookingStatus": "COMPLETED",
+      "distanceKM": 4.3,
+      "conversation": [
+        {
+          "messageId": "12359",
+          "senderId": "0007",
+          "isAutoReply": true,
+          "message": "We have successfully delivered your items."
+        },
+        {
+          "messageId": "24348",
+          "senderId": "0007",
+          "isAutoReply": false,
+          "message": "All good! Thanks for the quick service."
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.6125,
+        "longitude": 120.996,
+        "address": "Robinsons Galleria, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1103"
+      },
+      "destination": {
+        "latitude": 14.635,
+        "longitude": 121.025,
+        "address": "Trinoma, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1104"
+      }
+    },
+    {
+      "driverId": "0013",
+      "customerId": "0008",
+      "isPwd": true,
+      "pwdType": "FLEXIBLE",
+      "noteToDriver": "Please make sure the package is secure.",
+      "dateCreated": "2024-11-28T14:00:00Z",
+      "dateCompleted": "2024-11-28T14:45:00Z",
+      "isActive": false,
+      "bookingStatus": "COMPLETED",
+      "distanceKM": 7.4,
+      "conversation": [
+        {
+          "messageId": "12360",
+          "senderId": "0008",
+          "isAutoReply": true,
+          "message": "Your package has been delivered successfully."
+        },
+        {
+          "messageId": "24349",
+          "senderId": "0008",
+          "isAutoReply": false,
+          "message": "Thank you, everything is intact!"
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.55,
+        "longitude": 120.99,
+        "address": "Greenhills Shopping Center, San Juan, Philippines",
+        "city": "San Juan",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1503"
+      },
+      "destination": {
+        "latitude": 14.5665,
+        "longitude": 121.022,
+        "address": "Eastwood Mall, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1110"
+      }
+    },
+    {
+      "driverId": "0014",
+      "customerId": "0009",
+      "isPwd": false,
+      "pwdType": "",
+      "noteToDriver": "Please call me when you arrive at the destination.",
+      "dateCreated": "2024-11-28T16:00:00Z",
+      "dateCompleted": "2024-11-28T16:30:00Z",
+      "isActive": false,
+      "bookingStatus": "COMPLETED",
+      "distanceKM": 3.1,
+      "conversation": [
+        {
+          "messageId": "12361",
+          "senderId": "0009",
+          "isAutoReply": true,
+          "message": "Your delivery has been completed."
+        },
+        {
+          "messageId": "24350",
+          "senderId": "0009",
+          "isAutoReply": false,
+          "message": "Thanks a lot for the help!"
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.6075,
+        "longitude": 121.0,
+        "address": "Market! Market!, Taguig City, Philippines",
+        "city": "Taguig City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1630"
+      },
+      "destination": {
+        "latitude": 14.625,
+        "longitude": 121.0175,
+        "address": "Bonifacio High Street, Taguig City, Philippines",
+        "city": "Taguig City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1634"
+      }
+    },
+    {
+      "driverId": "0007",
+      "customerId": "0002",
+      "isPwd": true,
+      "pwdType": "MOBILE",
+      "noteToDriver": "Pakidala na lang po ang gamit sa likod ng sasakyan.",
+      "dateCreated": "2024-11-29T15:00:00Z",
+      "dateCompleted": "",
+      "isActive": true,
+      "bookingStatus": "PICK-UP",
+      "distanceKM": 5.2,
+      "conversation": [
+        {
+          "messageId": "12354",
+          "senderId": "0002",
+          "isAutoReply": true,
+          "message": "On the way to your location. Please wait."
+        },
+        {
+          "messageId": "24343",
+          "senderId": "0002",
+          "isAutoReply": false,
+          "message": "Salamat po, Kuya! Paabutin na lang ang gamit."
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.62,
+        "longitude": 120.98,
+        "address": "Quezon City Circle, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1100"
+      },
+      "destination": {
+        "latitude": 14.647,
+        "longitude": 120.982,
+        "address": "SM Mall of Asia, Pasay City, Philippines",
+        "city": "Pasay City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1300"
+      }
+    },
+    {
+      "driverId": "0008",
+      "customerId": "0003",
+      "isPwd": false,
+      "pwdType": "",
+      "noteToDriver": "Wala na pong laman yung sasakyan, paki-check lang.",
+      "dateCreated": "2024-11-29T15:30:00Z",
+      "dateCompleted": "",
+      "isActive": true,
+      "bookingStatus": "DROP-OFF",
+      "distanceKM": 8.9,
+      "conversation": [
+        {
+          "messageId": "12355",
+          "senderId": "0003",
+          "isAutoReply": true,
+          "message": "We are on our way, please wait for a moment."
+        },
+        {
+          "messageId": "24344",
+          "senderId": "0003",
+          "isAutoReply": false,
+          "message": "Pakitulungan lang po magbukas ng gate sa bahay."
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.675,
+        "longitude": 120.97,
+        "address": "Eastwood City, Quezon City, Philippines",
+        "city": "Quezon City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1110"
+      },
+      "destination": {
+        "latitude": 14.682,
+        "longitude": 120.978,
+        "address": "BGC High Street, Taguig, Philippines",
+        "city": "Taguig City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1630"
+      }
+    },
+    {
+      "driverId": "0009",
+      "customerId": "0004",
+      "isPwd": true,
+      "pwdType": "FLEXIBLE",
+      "noteToDriver": "Pakisuyo, hintayin lang sa labas ng opisina.",
+      "dateCreated": "2024-11-29T16:00:00Z",
+      "dateCompleted": "",
+      "isActive": true,
+      "bookingStatus": "PICK-UP",
+      "distanceKM": 3.6,
+      "conversation": [
+        {
+          "messageId": "12356",
+          "senderId": "0004",
+          "isAutoReply": true,
+          "message": "I will be there in a few minutes."
+        },
+        {
+          "messageId": "24345",
+          "senderId": "0004",
+          "isAutoReply": false,
+          "message": "Salamat po, Kuya!"
+        }
+      ],
+      "startLocation": {
+        "latitude": 14.58,
+        "longitude": 120.988,
+        "address": "Ortigas Center, Pasig City, Philippines",
+        "city": "Pasig City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1600"
+      },
+      "destination": {
+        "latitude": 14.582,
+        "longitude": 120.998,
+        "address": "Paseo de Roxas, Makati City, Philippines",
+        "city": "Makati City",
+        "state": "Metro Manila",
+        "country": "Philippines",
+        "postalCode": "1229"
+      }
+    },
+    {
+      "driverId": "0010",
+      "customerId": "0005",
+      "isPwd": false,
+      "pwdType": "",
+      "noteToDriver": "Pakipunta na lang po sa bahay ko sa may Davao.",
+      "dateCreated": "2024-11-29T16:30:00Z",
+      "dateCompleted": "",
+      "isActive": true,
+      "bookingStatus": "DROP-OFF",
+      "distanceKM": 12.3,
+      "conversation": [
+        {
+          "messageId": "12357",
+          "senderId": "0005",
+          "isAutoReply": true,
+          "message": "We are about 15 minutes away."
+        },
+        {
+          "messageId": "24346",
+          "senderId": "0005",
+          "isAutoReply": false,
+          "message": "Salamat po sa pagdala."
+        }
+      ],
+      "startLocation": {
+        "latitude": 7.19,
+        "longitude": 125.455,
+        "address": "Davao City Hall, Davao City, Philippines",
+        "city": "Davao City",
+        "state": "Davao del Sur",
+        "country": "Philippines",
+        "postalCode": "8000"
+      },
+      "destination": {
+        "latitude": 7.3,
+        "longitude": 125.5,
+        "address": "SM Lanang Premier, Davao City, Philippines",
+        "city": "Davao City",
+        "state": "Davao del Sur",
+        "country": "Philippines",
+        "postalCode": "8000"
+      }
+    }
+  ]
+}
