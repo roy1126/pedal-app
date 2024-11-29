@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,  // Updated background color
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.teal,
         title: const Text('Transportation Booking', style: TextStyle(fontSize: 20)),
@@ -63,55 +63,53 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15), // Apply the border radius to the image
+                  borderRadius: BorderRadius.circular(15),
                   child: Image.asset(
-                    'lib/assets/images/car.png', // Add your image asset here
+                    'lib/assets/images/car.png',
                     height: 300,
-                    fit: BoxFit.cover, // Make sure the image fills the space
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(Icons.map, color: Colors.teal),
+                        SizedBox(width: 8),
+                        Text(
+                          "Find Rides",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.map, color: Colors.teal),
-                          SizedBox(width: 8),
-                          Text(
-                            "Find Rides",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
+                  ),
+                  Container(
+                    height: 300,
+                    child: GoogleMap(
+                      initialCameraPosition: _initialPosition,
+                      onMapCreated: (GoogleMapController controller) {
+                        mapController = controller;
+                      },
                     ),
-                    Expanded(
-                      child: GoogleMap(
-                        initialCameraPosition: _initialPosition,
-                        onMapCreated: (GoogleMapController controller) {
-                          mapController = controller;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
