@@ -28,92 +28,164 @@ class _HomePageState extends State<HomePage> {
     zoom: 12,
   );
 
+  final TextEditingController fromController = TextEditingController();
+  final TextEditingController toController = TextEditingController();
+
+  void clearField(TextEditingController controller) {
+    controller.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.black,  // Background color for the scaffold
       appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: const Text('Transportation Booking', style: TextStyle(fontSize: 20)),
+        backgroundColor: Colors.tealAccent.shade400, // tealAccent400 background
+        title: const Text(
+          'Transportation Booking',
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications, color: Colors.white),
             onPressed: () {},
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Book now!",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Stack(  // Using Stack to overlay widgets
+        children: [
+          // Google Map (background layer)
+          Positioned.fill(
+            child: GoogleMap(
+              initialCameraPosition: _initialPosition,
+              onMapCreated: (GoogleMapController controller) {
+                mapController = controller;
+              },
             ),
-            const Text(
-              "Book what suits your needs",
-              style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 238, 166, 166)),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    'lib/assets/images/car.png',
-                    height: 300,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
+          ),
+          
+          // Image (background layer)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 300,  // Image height
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.map, color: Colors.teal),
-                        SizedBox(width: 8),
-                        Text(
-                          "Find Rides",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    height: 300,
-                    child: GoogleMap(
-                      initialCameraPosition: _initialPosition,
-                      onMapCreated: (GoogleMapController controller) {
-                        mapController = controller;
-                      },
-                    ),
-                  ),
-                ],
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                image: DecorationImage(
+                  image: AssetImage('lib/assets/images/car.png'),  // Your background image
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // From and To Fields
+          Positioned(
+            top: 320,  // Positioned below the image
+            left: 16,
+            right: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Book Your Ride",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const Text(
+                  "Enter your journey details",
+                  style: TextStyle(fontSize: 16, color: Colors.white60),
+                ),
+                const SizedBox(height: 20),
+
+                // From and To Fields aligned horizontally
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // From TextField
+                    Expanded(
+                      child: TextField(
+                        controller: fromController,
+                        decoration: InputDecoration(
+                          labelText: 'From',
+                          labelStyle: TextStyle(color: Colors.black),
+                          border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.white,
+                          prefixIcon: Icon(Icons.location_on, color: Colors.tealAccent[700]),
+                          suffixIcon: fromController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, color: Colors.white),
+                                  onPressed: () => clearField(fromController),
+                                )
+                              : null,
+                        ),
+                        style: TextStyle(color: Colors.white), // White text color
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // To TextField
+                    Expanded(
+                      child: TextField(
+                        controller: toController,
+                        decoration: InputDecoration(
+                          labelText: 'To',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.tealAccent.shade100,
+                          prefixIcon: Icon(Icons.location_on, color: Colors.white),
+                          suffixIcon: toController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear, color: Colors.white),
+                                  onPressed: () => clearField(toController),
+                                )
+                              : null,
+                        ),
+                        style: TextStyle(color: Colors.white), // White text color
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Book Ride Button aligned next to the "To" field
+                ElevatedButton(
+                  onPressed: () {
+                    String from = fromController.text;
+                    String to = toController.text;
+
+                    if (from.isNotEmpty && to.isNotEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Ride booked from $from to $to"),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please fill in both fields")),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.tealAccent.shade400, // tealAccent400 background
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Book Ride',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -130,7 +202,7 @@ class _HomePageState extends State<HomePage> {
             label: "Settings",
           ),
         ],
-        selectedItemColor: Colors.teal,
+        selectedItemColor: Colors.tealAccent.shade400,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
       ),
