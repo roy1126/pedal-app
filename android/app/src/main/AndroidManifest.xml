@@ -21,7 +21,7 @@
             <!-- Meta-data for the Google Maps API Key -->
             <meta-data
               android:name="com.google.android.geo.API_KEY"
-              android:value="AIzaSyCMcNb-eIDL49Qsz-RXSzb4BUPxsl1GYnE"/>  <!-- Replace with your valid API key -->
+              android:value="AIzaSyDnXprchK9H4LXeUaEHr4yUVKqJGFtW5iY"/>  <!-- Replace with your valid API key -->
             
             <!-- Meta-data for Flutter theme -->
             <meta-data

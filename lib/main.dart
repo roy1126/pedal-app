@@ -19,7 +19,7 @@ import 'screens/vehicle_registration_screen.dart'; // Import for Registration Fo
 //         routeWidget: (args) => const VehicleRegistrationScreen()),
 //     RouteInfo(
 //         name: "/vehicle_details",
-//         routeWidget: (args) => const VehicleDetailsScreen()),
+//         routeWidget: (a  rgs) => const VehicleDetailsScreen()),
 //   ],
 //   initialRouteInfo:
 //       InitialRouteInfo(initialRouteName: "/"), // Starting route is LoginScreen

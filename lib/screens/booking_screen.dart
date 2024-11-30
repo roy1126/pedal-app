@@ -117,12 +117,12 @@ class _HomePageState extends State<HomePage> {
                           prefixIcon: Icon(Icons.location_on, color: Colors.tealAccent[700]),
                           suffixIcon: fromController.text.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear, color: Colors.white),
+                                  icon: Icon(Icons.clear, color: Colors.black),
                                   onPressed: () => clearField(fromController),
                                 )
                               : null,
                         ),
-                        style: TextStyle(color: Colors.white), // White text color
+                        style: TextStyle(color: Colors.black), // White text color
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -132,19 +132,19 @@ class _HomePageState extends State<HomePage> {
                         controller: toController,
                         decoration: InputDecoration(
                           labelText: 'To',
-                          labelStyle: TextStyle(color: Colors.white),
+                          labelStyle: TextStyle(color: Colors.black),
                           border: OutlineInputBorder(),
                           filled: true,
-                          fillColor: Colors.tealAccent.shade100,
-                          prefixIcon: Icon(Icons.location_on, color: Colors.white),
+                          fillColor: Colors.white,
+                          prefixIcon: Icon(Icons.location_on, color: Colors.tealAccent[700]),
                           suffixIcon: toController.text.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear, color: Colors.white),
+                                  icon: Icon(Icons.clear, color: Colors.black),
                                   onPressed: () => clearField(toController),
                                 )
                               : null,
                         ),
-                        style: TextStyle(color: Colors.white), // White text color
+                        style: TextStyle(color: Colors.black), // White text color
                       ),
                     ),
                   ],
