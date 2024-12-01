@@ -1,211 +1,244 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-void main() {
-  runApp(BookingScreen());
-}
-
-class BookingScreen extends StatelessWidget {
+class BookingScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-    );
-  }
+  _BookingScreenState createState() => _BookingScreenState();
 }
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  late GoogleMapController mapController;
-
-  static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(37.7749, -122.4194), // Coordinates of San Francisco
-    zoom: 12,
-  );
-
+class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController fromController = TextEditingController();
-  final TextEditingController toController = TextEditingController();
+  final TextEditingController destinationController = TextEditingController();
+  final TextEditingController discountController = TextEditingController();
 
-  void clearField(TextEditingController controller) {
-    controller.clear();
+  bool isPWD = false; // Variable to check if user is eligible for PWD discount
+  final String googleApiKey = "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
+  double estimatedDistance = 0.0; // in kilometers
+  double estimatedPrice = 0.0;
+
+  @override
+  void dispose() {
+    // Dispose of the controllers to avoid memory leaks
+    fromController.dispose();
+    destinationController.dispose();
+    discountController.dispose();
+    super.dispose();
+  }
+
+  Future<void> calculateDistanceAndPrice() async {
+    if (fromController.text.isEmpty || destinationController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please enter both locations")),
+      );
+      return;
+    }
+
+    final from = Uri.encodeFull(fromController.text);
+    final destination = Uri.encodeFull(destinationController.text);
+
+    final url = Uri.parse(
+        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=$from&destinations=$destination&key=$googleApiKey");
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        final distanceMeters = data['rows'][0]['elements'][0]['distance']['value'];
+        final distanceKm = distanceMeters / 1000; // Convert meters to kilometers
+        final baseRate = 50.0; // Base fare
+        final ratePerKm = 10.0; // Cost per km
+
+        setState(() {
+          estimatedDistance = distanceKm;
+          estimatedPrice = baseRate + (ratePerKm * distanceKm);
+        });
+      } else {
+        throw Exception("Failed to fetch distance");
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching distance: $error")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,  // Background color for the scaffold
-      appBar: AppBar(
-        backgroundColor: Colors.tealAccent.shade400, // tealAccent400 background
-        title: const Text(
-          'Transportation Booking',
-          style: TextStyle(fontSize: 20, color: Colors.white),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Stack(  // Using Stack to overlay widgets
-        children: [
-          // Google Map (background layer)
-          Positioned.fill(
-            child: GoogleMap(
-              initialCameraPosition: _initialPosition,
-              onMapCreated: (GoogleMapController controller) {
-                mapController = controller;
-              },
-            ),
-          ),
-          
-          // Image (background layer)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 300,  // Image height
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-                image: DecorationImage(
-                  image: AssetImage('lib/assets/images/car.png'),  // Your background image
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
+    final screenWidth = MediaQuery.of(context).size.width;
 
-          // From and To Fields
-          Positioned(
-            top: 320,  // Positioned below the image
-            left: 16,
-            right: 16,
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Book Your Ride",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const Text(
-                  "Enter your journey details",
-                  style: TextStyle(fontSize: 16, color: Colors.white60),
-                ),
-                const SizedBox(height: 20),
-
-                // From and To Fields aligned horizontally
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Top Banner with Bus Logo
+                Stack(
                   children: [
-                    // From TextField
-                    Expanded(
-                      child: TextField(
-                        controller: fromController,
-                        decoration: InputDecoration(
-                          labelText: 'From',
-                          labelStyle: TextStyle(color: Colors.black),
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: Icon(Icons.location_on, color: Colors.tealAccent[700]),
-                          suffixIcon: fromController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.clear, color: Colors.black),
-                                  onPressed: () => clearField(fromController),
-                                )
-                              : null,
+                    Container(
+                      width: double.infinity,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Image.asset(
+                          'lib/assets/images/car.png',
+                          width: 350,
+                          height: 200,
+                          fit: BoxFit.contain,
                         ),
-                        style: TextStyle(color: Colors.black), // White text color
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    // To TextField
-                    Expanded(
-                      child: TextField(
-                        controller: toController,
-                        decoration: InputDecoration(
-                          labelText: 'To',
-                          labelStyle: TextStyle(color: Colors.black),
-                          border: OutlineInputBorder(),
-                          filled: true,
-                          fillColor: Colors.white,
-                          prefixIcon: Icon(Icons.location_on, color: Colors.tealAccent[700]),
-                          suffixIcon: toController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(Icons.clear, color: Colors.black),
-                                  onPressed: () => clearField(toController),
-                                )
-                              : null,
-                        ),
-                        style: TextStyle(color: Colors.black), // White text color
+                    Positioned(
+                      top: 10,
+                      left: 16,
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            'lib/assets/logo/logo.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Your City, Your Way",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+
+                // Input Fields and Buttons
+                buildInputFields(),
+                const SizedBox(height: 10),
+
+                // Distance and Price Display
+                if (estimatedDistance > 0) buildDistanceAndPriceDisplay(),
 
                 const SizedBox(height: 20),
 
-                // Book Ride Button aligned next to the "To" field
-                ElevatedButton(
-                  onPressed: () {
-                    String from = fromController.text;
-                    String to = toController.text;
-
-                    if (from.isNotEmpty && to.isNotEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Ride booked from $from to $to"),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please fill in both fields")),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.tealAccent.shade400, // tealAccent400 background
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                // Map Placeholder
+                Container(
+                  height: 300,
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(0.0, 0.0), // Replace with the current location
+                      zoom: 14.0,
                     ),
-                  ),
-                  child: const Text(
-                    'Book Ride',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    markers: {},
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
+      bottomNavigationBar: buildBottomNavigationBar(),
+    );
+  }
+
+  Column buildInputFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Current Location",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 5),
+        TextField(
+          controller: fromController,
+          decoration: InputDecoration(
+            labelText: "Where are you now?",
+            hintText: "Current Location",
+            prefixIcon: const Icon(Icons.location_on),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.my_location),
+              onPressed: () {
+                // Get the current location logic here
+                // Update the fromController with the current location
+              },
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            label: "Menu",
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          "City Destination",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 5),
+        TextField(
+          controller: destinationController,
+          decoration: InputDecoration(
+            labelText: "Where to?",
+            hintText: "ex: Manila, Makati etc.",
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton(
+          onPressed: calculateDistanceAndPrice,
+          child: const Text("Calculate Distance & Price"),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(fontSize: 18),
+            backgroundColor: Colors.blue,
           ),
-        ],
-        selectedItemColor: Colors.tealAccent.shade400,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-      ),
+        ),
+      ],
+    );
+  }
+
+  Column buildDistanceAndPriceDisplay() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Estimated Distance: ${estimatedDistance.toStringAsFixed(2)} km",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          "Estimated Price: PHP ${estimatedPrice.toStringAsFixed(2)}",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  BottomNavigationBar buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.help), label: "Help"),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: "Activity"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+      ],
+      selectedItemColor: Colors.green,
+      unselectedItemColor: Colors.grey,
+      showUnselectedLabels: true,
     );
   }
 }

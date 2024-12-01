@@ -2,6 +2,7 @@
     <!-- Add location permissions outside of the application tag -->
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="pedal_application"
@@ -21,7 +22,7 @@
             <!-- Meta-data for the Google Maps API Key -->
             <meta-data
               android:name="com.google.android.geo.API_KEY"
-              android:value="AIzaSyDnXprchK9H4LXeUaEHr4yUVKqJGFtW5iY"/>  <!-- Replace with your valid API key -->
+              android:value="AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"/>  <!-- Replace with your valid API key -->
             
             <!-- Meta-data for Flutter theme -->
             <meta-data
