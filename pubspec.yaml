@@ -14,13 +14,14 @@ dependencies:
   google_maps_flutter_web: ^0.5.10  # Update to the latest web version
   file_picker: ^8.1.4
   google_maps_webservice: ^0.0.19  # Updated for place search functionality
-  location: ^6.0.2
+  location: ^7.0.1
   cupertino_icons: ^1.0.8
   route_manager: ^2.0.2
   get: ^4.6.6
   http: ^0.13.6  # Downgraded to compatible version
   json_annotation: ^4.9.0
   json_serializable: ^6.9.0
+  geolocator: ^8.0.0
 
 dev_dependencies:
   flutter_test:

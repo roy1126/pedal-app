@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 
 class BookingScreen extends StatefulWidget {
   @override
@@ -18,6 +19,8 @@ class _BookingScreenState extends State<BookingScreen> {
   final String googleApiKey = "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
   double estimatedDistance = 0.0; // in kilometers
   double estimatedPrice = 0.0;
+  late GoogleMapController mapController; // Controller for the map
+  late LatLng currentLocation; // Store current location to move the map
 
   @override
   void dispose() {
@@ -28,6 +31,24 @@ class _BookingScreenState extends State<BookingScreen> {
     super.dispose();
   }
 
+  // Method to get the current location
+  Future<void> getCurrentLocation() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+        fromController.text = "Lat: ${position.latitude}, Long: ${position.longitude}"; // Optional: Displaying coordinates in the text field
+      });
+      mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error getting location: $e")),
+      );
+    }
+  }
+
+  // Method to calculate distance and price
   Future<void> calculateDistanceAndPrice() async {
     if (fromController.text.isEmpty || destinationController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -138,10 +159,15 @@ class _BookingScreenState extends State<BookingScreen> {
                   height: 300,
                   child: GoogleMap(
                     initialCameraPosition: CameraPosition(
-                      target: LatLng(0.0, 0.0), // Replace with the current location
+                      target: LatLng(0.0, 0.0), // Default to center
                       zoom: 14.0,
                     ),
                     markers: {},
+                    onMapCreated: (GoogleMapController controller) {
+                      mapController = controller;
+                    },
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
                   ),
                 ),
               ],
@@ -170,10 +196,7 @@ class _BookingScreenState extends State<BookingScreen> {
             prefixIcon: const Icon(Icons.location_on),
             suffixIcon: IconButton(
               icon: const Icon(Icons.my_location),
-              onPressed: () {
-                // Get the current location logic here
-                // Update the fromController with the current location
-              },
+              onPressed: getCurrentLocation, // This will fetch and update the current location
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
