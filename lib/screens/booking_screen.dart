@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+=======
+>>>>>>> Stashed changes
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,36 +19,33 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController fromController = TextEditingController();
   final TextEditingController destinationController = TextEditingController();
-  final TextEditingController discountController = TextEditingController();
 
+<<<<<<< Updated upstream
   bool isPWD = false; // Variable to check if user is eligible for PWD discount
   final String googleApiKey =
       "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
   double estimatedDistance = 0.0; // in kilometers
+=======
+  final String googleApiKey = "AIzaSyDnXprchK9H4LXeUaEHr4yUVKqJGFtW5iY";
+  double estimatedDistance = 0.0;
+>>>>>>> Stashed changes
   double estimatedPrice = 0.0;
-  late GoogleMapController mapController; // Controller for the map
-  late LatLng currentLocation; // Store current location to move the map
+  bool isBookingConfirmed = false;
+  LatLng? fromLocation;
+  LatLng? toLocation;
 
-  @override
-  void dispose() {
-    // Dispose of the controllers to avoid memory leaks
-    fromController.dispose();
-    destinationController.dispose();
-    discountController.dispose();
-    super.dispose();
-  }
+  late GoogleMapController mapController;
 
-  // Method to get the current location
+  // Method to get current location
   Future<void> getCurrentLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
       setState(() {
-        currentLocation = LatLng(position.latitude, position.longitude);
-        fromController.text =
-            "Lat: ${position.latitude}, Long: ${position.longitude}"; // Optional: Displaying coordinates in the text field
+        fromLocation = LatLng(position.latitude, position.longitude);
+        fromController.text = "Lat: ${position.latitude}, Long: ${position.longitude}";
       });
-      mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
+      mapController.animateCamera(CameraUpdate.newLatLng(fromLocation!));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error getting location: $e")),
@@ -62,24 +62,17 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    final from = Uri.encodeFull(fromController.text);
-    final destination = Uri.encodeFull(destinationController.text);
-
     final url = Uri.parse(
-        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=$from&destinations=$destination&key=$googleApiKey");
+        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${fromController.text}&destinations=${destinationController.text}&key=$googleApiKey");
 
     try {
-      final response = await http.post(url);
-
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
-        final distanceMeters =
-            data['rows'][0]['elements'][0]['distance']['value'];
-        final distanceKm =
-            distanceMeters / 1000; // Convert meters to kilometers
-        final baseRate = 50.0; // Base fare
-        final ratePerKm = 10.0; // Cost per km
+        final distanceMeters = data['rows'][0]['elements'][0]['distance']['value'];
+        final distanceKm = distanceMeters / 1000; // Convert to kilometers
+        final baseRate = 50.0;
+        final ratePerKm = 10.0;
 
         setState(() {
           estimatedDistance = distanceKm;
@@ -95,96 +88,99 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  void confirmBooking() {
+    setState(() {
+      isBookingConfirmed = true;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Booking Confirmed! Driver is on the way.")),
+    );
+  }
+
+  void cancelBooking() {
+    setState(() {
+      isBookingConfirmed = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Banner with Bus Logo
-                Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          'lib/assets/images/car.png',
-                          width: 350,
-                          height: 200,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      left: 16,
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            'lib/assets/logo/logo.png',
-                            width: 40,
-                            height: 40,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "Your City, Your Way",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                if (!isBookingConfirmed) ...[
+                  // Input Fields
+                  buildInputFields(),
+                  const SizedBox(height: 10),
+
+                  // Distance and Price
+                  if (estimatedDistance > 0) buildDistanceAndPriceDisplay(),
+
+                  const SizedBox(height: 20),
+
+                  // Confirm Button
+                  if (estimatedPrice > 0)
+                    ElevatedButton(
+                      onPressed: confirmBooking,
+                      child: const Text("Confirm Booking"),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 20),
+                ] else ...[
+                  // Booking Confirmation Details
+                  Text(
+                    "Driver is on the way!",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  Text("From: ${fromController.text}"),
+                  Text("To: ${destinationController.text}"),
+                  Text("Price: PHP ${estimatedPrice.toStringAsFixed(2)}"),
+                  const SizedBox(height: 20),
 
-                // Input Fields and Buttons
-                buildInputFields(),
-                const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: cancelBooking,
+                    child: const Text("Cancel Booking"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
 
-                // Distance and Price Display
-                if (estimatedDistance > 0) buildDistanceAndPriceDisplay(),
-
-                const SizedBox(height: 20),
-
-                // Map Placeholder
+                // Map Display
                 Container(
                   height: 300,
-                  child: Text("Google Map HEre"),
-                  // child: GoogleMap(
-                  //   initialCameraPosition: CameraPosition(
-                  //     target: LatLng(0.0, 0.0), // Default to center
-                  //     zoom: 14.0,
-                  //   ),
-                  //   markers: {},
-                  //   onMapCreated: (GoogleMapController controller) {
-                  //     mapController = controller;
-                  //   },
-                  //   myLocationEnabled: true,
-                  //   myLocationButtonEnabled: false,
-                  // ),
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: fromLocation ?? LatLng(0.0, 0.0),
+                      zoom: 14.0,
+                    ),
+                    markers: {
+                      if (fromLocation != null)
+                        Marker(markerId: MarkerId("from"), position: fromLocation!),
+                      if (toLocation != null)
+                        Marker(markerId: MarkerId("to"), position: toLocation!),
+                    },
+                    onMapCreated: (GoogleMapController controller) {
+                      mapController = controller;
+                    },
+                    myLocationEnabled: true,
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: buildBottomNavigationBar(),
     );
   }
 
@@ -192,53 +188,35 @@ class _BookingScreenState extends State<BookingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Current Location",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        const Text("Current Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
         TextField(
           controller: fromController,
           decoration: InputDecoration(
-            labelText: "Where are you now?",
-            hintText: "Current Location",
+            hintText: "Enter your current location",
             prefixIcon: const Icon(Icons.location_on),
             suffixIcon: IconButton(
               icon: const Icon(Icons.my_location),
-              onPressed:
-                  getCurrentLocation, // This will fetch and update the current location
+              onPressed: getCurrentLocation,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            border: OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
-          "City Destination",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        const Text("Destination", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 5),
         TextField(
           controller: destinationController,
           decoration: InputDecoration(
-            labelText: "Where to?",
-            hintText: "ex: Manila, Makati etc.",
+            hintText: "Enter your destination",
             prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+            border: OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: calculateDistanceAndPrice,
           child: const Text("Calculate Distance & Price"),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle: const TextStyle(fontSize: 18),
-            backgroundColor: Colors.blue,
-          ),
         ),
       ],
     );
@@ -248,30 +226,9 @@ class _BookingScreenState extends State<BookingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Estimated Distance: ${estimatedDistance.toStringAsFixed(2)} km",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          "Estimated Price: PHP ${estimatedPrice.toStringAsFixed(2)}",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+        Text("Estimated Distance: ${estimatedDistance.toStringAsFixed(2)} km"),
+        Text("Estimated Price: PHP ${estimatedPrice.toStringAsFixed(2)}"),
       ],
-    );
-  }
-
-  BottomNavigationBar buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.help), label: "Help"),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: "Activity"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-      ],
-      selectedItemColor: Colors.green,
-      unselectedItemColor: Colors.grey,
-      showUnselectedLabels: true,
     );
   }
 }
