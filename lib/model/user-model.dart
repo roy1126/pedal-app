@@ -1,30 +1,4 @@
-import 'package:pedal_application/model/car-model.dart';
-
-class Document {
-  final String value;
-  final String file;
-
-  Document({
-    required this.value,
-    required this.file,
-  });
-
-  // Factory constructor for creating a Document object from JSON
-  factory Document.fromJson(Map<String, dynamic> json) {
-    return Document(
-      value: json['value'],
-      file: json['file'],
-    );
-  }
-
-  // Convert Document object to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'value': value,
-      'file': file,
-    };
-  }
-}
+import 'package:pedal_application/model/car.model.dart';
 
 class User {
   String id;
@@ -66,6 +40,8 @@ class User {
           : null, // If carDetails is present, create a Car object
     );
   }
+
+  get username => null;
 
   // Method to convert a User object to a JSON map
   Map<String, dynamic> toJson() {

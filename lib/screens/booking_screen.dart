@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+
+import '../controller/main_controller.dart';
 
 class BookingScreen extends StatefulWidget {
   @override
@@ -16,7 +19,8 @@ class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController discountController = TextEditingController();
 
   bool isPWD = false; // Variable to check if user is eligible for PWD discount
-  final String googleApiKey = "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
+  final String googleApiKey =
+      "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
   double estimatedDistance = 0.0; // in kilometers
   double estimatedPrice = 0.0;
   late GoogleMapController mapController; // Controller for the map
@@ -38,7 +42,8 @@ class _BookingScreenState extends State<BookingScreen> {
           desiredAccuracy: LocationAccuracy.high);
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
-        fromController.text = "Lat: ${position.latitude}, Long: ${position.longitude}"; // Optional: Displaying coordinates in the text field
+        fromController.text =
+            "Lat: ${position.latitude}, Long: ${position.longitude}"; // Optional: Displaying coordinates in the text field
       });
       mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
     } catch (e) {
@@ -64,13 +69,15 @@ class _BookingScreenState extends State<BookingScreen> {
         "https://maps.googleapis.com/maps/api/distancematrix/json?origins=$from&destinations=$destination&key=$googleApiKey");
 
     try {
-      final response = await http.get(url);
+      final response = await http.post(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        final distanceMeters = data['rows'][0]['elements'][0]['distance']['value'];
-        final distanceKm = distanceMeters / 1000; // Convert meters to kilometers
+        final distanceMeters =
+            data['rows'][0]['elements'][0]['distance']['value'];
+        final distanceKm =
+            distanceMeters / 1000; // Convert meters to kilometers
         final baseRate = 50.0; // Base fare
         final ratePerKm = 10.0; // Cost per km
 
@@ -96,7 +103,8 @@ class _BookingScreenState extends State<BookingScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -157,18 +165,19 @@ class _BookingScreenState extends State<BookingScreen> {
                 // Map Placeholder
                 Container(
                   height: 300,
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(0.0, 0.0), // Default to center
-                      zoom: 14.0,
-                    ),
-                    markers: {},
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController = controller;
-                    },
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                  ),
+                  child: Text("Google Map HEre"),
+                  // child: GoogleMap(
+                  //   initialCameraPosition: CameraPosition(
+                  //     target: LatLng(0.0, 0.0), // Default to center
+                  //     zoom: 14.0,
+                  //   ),
+                  //   markers: {},
+                  //   onMapCreated: (GoogleMapController controller) {
+                  //     mapController = controller;
+                  //   },
+                  //   myLocationEnabled: true,
+                  //   myLocationButtonEnabled: false,
+                  // ),
                 ),
               ],
             ),
@@ -196,7 +205,8 @@ class _BookingScreenState extends State<BookingScreen> {
             prefixIcon: const Icon(Icons.location_on),
             suffixIcon: IconButton(
               icon: const Icon(Icons.my_location),
-              onPressed: getCurrentLocation, // This will fetch and update the current location
+              onPressed:
+                  getCurrentLocation, // This will fetch and update the current location
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
