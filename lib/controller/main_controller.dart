@@ -20,12 +20,23 @@ class MainController extends GetxController {
           confirmPassword"w",
           isDriver: false),
 
+      Driver(
+          id: "0001",
+          firstName: "John",
+          lastName: "Smith",
+          phoneNumber: "09123456789",
+          homeAddress: "29 F. Cruz Santolan , Pasig City",
+          email: "q",
+          password: "w",
+          confirmPassword"w",
+          isDriver: true),
+
                 // Create car and document objects
       CarDetails car = CarDetails(
-        carModel: "Toyota Corolla",
-        carMake: "Toyota",
+        vehicleModel: "Toyota Corolla",
+        yearModel: "2024",
         licensePlate: "ABC1234",
-        color: "Red",
+        accessibilityFeatures: "RAMP",
       );
 
       Documents documents = Documents(
