@@ -1,9 +1,9 @@
-import 'dart:developer';
+//import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:pedal_application/model/user-model.dart';
-import 'dart:convert'; // For JSON parsing
-import '../model/appData.model.dart';
+//import 'dart:convert'; // For JSON parsing
+//import '../model/appData.model.dart';
 
 class MainController extends GetxController {
   var _isLogin = false;
@@ -14,10 +14,30 @@ class MainController extends GetxController {
           firstName: "John",
           lastName: "Smith",
           phoneNumber: "09123456789",
-          address: "29 F. Cruz Santolan , Pasig City",
+          homeAddress: "29 F. Cruz Santolan , Pasig City",
           email: "q",
           password: "w",
+          confirmPassword"w",
           isDriver: false),
+
+                // Create car and document objects
+      CarDetails car = CarDetails(
+        carModel: "Toyota Corolla",
+        carMake: "Toyota",
+        licensePlate: "ABC1234",
+        color: "Red",
+      );
+
+      Documents documents = Documents(
+        vehicleRegistration: "DL123456",
+        insuranceDocument: DateTime(2025, 12, 31),
+        driverLicense: "D-0123",
+      );
+
+      // Add details to the controller
+      final controller = Get.find<MainController>();
+      controller.addCarDetails("0001", car); // Assuming userId is "0001"
+      controller.addDocuments("0001", documents);
     ],
     booking: []
   ).obs;
