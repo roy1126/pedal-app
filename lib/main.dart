@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:pedal_application/screens/home_screen.dart';
 import 'package:pedal_application/screens/login_screen.dart';
 import 'package:route_manager/route_manager.dart';
 import 'src/locations.dart' as locations;
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
       ),
       getPages: [
         GetPage(name: '/', page: () => const LoginScreen()),
+        GetPage(name: '/home', page: () => const HomeScreen()),
         GetPage(name: '/book', page: () => BookingScreen()),
         GetPage(name: '/sign_up', page: () => SignUpScreen(isDriver: false)),
         GetPage(

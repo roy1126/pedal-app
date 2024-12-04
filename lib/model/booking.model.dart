@@ -2,6 +2,7 @@ import 'conversation.model.dart';
 import 'location.model.dart';
 
 class Booking {
+  final String bookingId;
   final String driverId;
   final String customerId;
   final bool isPwd;
@@ -17,6 +18,7 @@ class Booking {
   final Location destination;
 
   Booking({
+    required this.bookingId,
     required this.driverId,
     required this.customerId,
     required this.isPwd,
@@ -39,6 +41,7 @@ class Booking {
         convList.map((e) => Conversation.fromJson(e)).toList();
 
     return Booking(
+      bookingId: json['bookingId'] ?? '',
       driverId: json['driverId'] ?? '',
       customerId: json['customerId'] ?? '',
       isPwd: json['isPwd'] ?? false,

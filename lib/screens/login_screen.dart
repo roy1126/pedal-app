@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pedal_application/controller/main_controller.dart';
 import 'package:pedal_application/screens/booking_screen.dart';
+import 'package:pedal_application/screens/home_screen.dart';
 import 'sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -164,9 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       mainController.login(email, password);
                                     });
 
-                                    Future.delayed(Duration(seconds: 3), () {
+                                    Future.delayed(Duration(seconds: 1), () {
                                       if (mainController.isLoggedIn()) {
-                                        Get.to(() => BookingScreen());
+                                        Get.to(() => HomeScreen());
                                       } else {
                                         Get.snackbar(
                                           'Error',

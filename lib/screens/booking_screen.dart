@@ -1,7 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:pedal_application/screens/home_screen.dart';
+import 'dart:math';
+
+import '../controller/main_controller.dart';
+import '../model/booking.model.dart';
+import '../model/location.model.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -11,6 +18,9 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  final random = Random();
+  final mainController = Get.put(MainController());
+  bool _isLoading = false;
   late GoogleMapController _mapController;
   static const LatLng _initialPosition =
       LatLng(37.7749, -122.4194); // San Francisco, CA
@@ -35,101 +45,187 @@ class _BookingScreenState extends State<BookingScreen> {
   final double baseFare = 40.0; // PHP 40
   final double ratePerKm = 15.0; // PHP 15 per kilometer
   final double ratePerMinute = 2.0; // PHP 2 per minute
-
   @override
   Widget build(BuildContext context) {
-    // Mobile constraints
-    double mobileWidth = 400; // Maximum width for mobile
-    double mobileHeight = 600; // Maximum height for mobile
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
-    // Ensure width and height are within mobile constraints
-    screenWidth = screenWidth > mobileWidth ? mobileWidth : screenWidth;
-    screenHeight = screenHeight > mobileHeight ? mobileHeight : screenHeight;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Booking Screen"),
         backgroundColor: Colors.blue,
       ),
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _initialPosition,
-              zoom: 14,
-            ),
-            onMapCreated: (controller) {
-              _mapController = controller;
-            },
-            markers: _markers,
-            polylines: _polylines, // Add the polyline to the map
-          ),
-          Positioned(
-            bottom: 80,
-            left: 20,
-            right: 20,
-            child: Column(
+      body: _isLoading
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Vertically center
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // Horizontally center
               children: [
-                _buildLocationInput(
-                  label: "From",
-                  controller: _fromController,
-                  onPlaceSelected: (place) {
-                    _setMarker(place['lat'], place['lng'], "From");
-                    _fromLocation = LatLng(place['lat'], place['lng']);
-                    _calculateETAandPrice();
-                    _clearSuggestions('from');
-                    _updatePolyline();
-                  },
-                  suggestions: _fromPlaceSuggestions,
-                  onChanged: (query) {
-                    if (query.isNotEmpty) {
-                      _fetchPlaces(query, "from");
-                    }
-                  },
+                CircularProgressIndicator(
+                  strokeWidth: 8,
                 ),
-                const SizedBox(height: 10),
-                _buildLocationInput(
-                  label: "To",
-                  controller: _toController,
-                  onPlaceSelected: (place) {
-                    _setMarker(place['lat'], place['lng'], "To");
-                    _toLocation = LatLng(place['lat'], place['lng']);
-                    _calculateETAandPrice();
-                    _clearSuggestions('to');
-                    _updatePolyline();
-                  },
-                  suggestions: _toPlaceSuggestions,
-                  onChanged: (query) {
-                    if (query.isNotEmpty) {
-                      _fetchPlaces(query, "to");
-                    }
-                  },
-                ),
-                const SizedBox(height: 10),
-                _buildSummary(),
+                SizedBox(
+                    height:
+                        10), // Adds some spacing between the spinner and text
+                Text("Loading..."),
               ],
-            ),
-          ),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Booking confirmed!")),
+            ) // Shows the loading spinner
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(40.0),
+                            height: 300, // Fixed height for the map
+                            child: GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: _initialPosition,
+                                zoom: 14,
+                              ),
+                              onMapCreated: (controller) {
+                                _mapController = controller;
+                              },
+                              markers: _markers,
+                              polylines:
+                                  _polylines, // Add the polyline to the map
+                            ),
+                          ),
+                          // Adjust to overlay UI below the map
+                          Padding(
+                            padding: const EdgeInsets.all(40.0),
+                            child: Column(
+                              children: [
+                                _buildLocationInput(
+                                  label: "From",
+                                  controller: _fromController,
+                                  onPlaceSelected: (place) {
+                                    _setMarker(
+                                        place['lat'], place['lng'], "From");
+                                    _fromLocation =
+                                        LatLng(place['lat'], place['lng']);
+                                    _calculateETAandPrice();
+                                    _clearSuggestions('from');
+                                    _updatePolyline();
+                                  },
+                                  suggestions: _fromPlaceSuggestions,
+                                  onChanged: (query) {
+                                    if (query.isNotEmpty) {
+                                      _fetchPlaces(query, "from");
+                                    }
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                _buildLocationInput(
+                                  label: "To",
+                                  controller: _toController,
+                                  onPlaceSelected: (place) {
+                                    _setMarker(
+                                        place['lat'], place['lng'], "To");
+                                    _toLocation =
+                                        LatLng(place['lat'], place['lng']);
+                                    _calculateETAandPrice();
+                                    _clearSuggestions('to');
+                                    _updatePolyline();
+                                  },
+                                  suggestions: _toPlaceSuggestions,
+                                  onChanged: (query) {
+                                    if (query.isNotEmpty) {
+                                      _fetchPlaces(query, "to");
+                                    }
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                Text(_toController.text),
+                                Text(_fromController.text),
+                                _buildSummary(),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (_fromLocation == null ||
+                                        _toLocation == null) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                "Please complete your location and destination.")),
+                                      );
+                                      return;
+                                    }
+
+                                    setState(() {
+                                      _isLoading = true;
+
+                                      final booking = Booking(
+                                        bookingId:
+                                            'bookingId${random.nextInt(100)}',
+                                        driverId: "",
+                                        customerId:
+                                            mainController.getCurrentUser().id,
+                                        isPwd: true,
+                                        pwdType: "AGED",
+                                        noteToDriver:
+                                            "Pwede po patulong ako magbuhat ng gamit sa sasakyan.",
+                                        dateCreated: DateTime.now(),
+                                        dateCompleted: null,
+                                        isActive: true,
+                                        bookingStatus: "PICK-UP",
+                                        distanceKM: 10.5,
+                                        conversation: [],
+                                        startLocation: Location(
+                                          latitude: 14.5995,
+                                          longitude: 120.9842,
+                                          address:
+                                              "Rizal Park, Ermita, Manila, Philippines",
+                                          city: "Manila",
+                                          state: "Metro Manila",
+                                          country: "Philippines",
+                                          postalCode: "1000",
+                                        ),
+                                        destination: Location(
+                                          latitude: 14.5995,
+                                          longitude: 120.9842,
+                                          address:
+                                              "Rizal Park, Ermita, Manila, Philippines",
+                                          city: "Manila",
+                                          state: "Metro Manila",
+                                          country: "Philippines",
+                                          postalCode: "1000",
+                                        ),
+                                      );
+                                      mainController.addBooking(booking);
+                                    });
+
+                                    Get.snackbar(
+                                      'Success',
+                                      'Booking is now created!',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+
+                                    Future.delayed(Duration(seconds: 3), () {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+
+                                      Get.to(() => HomeScreen());
+                                    });
+                                  },
+                                  child: const Text("Confirm Booking"),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.all(16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-              ),
-              child: const Text("Confirm Booking"),
             ),
-          ),
-        ],
-      ),
     );
   }
 
