@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Add location permissions outside of the application tag -->
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,11 +19,7 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
             
-            <!-- Meta-data for the Google Maps API Key -->
-            <meta-data
-              android:name="com.google.android.geo.API_KEY"
-              android:value="AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"/>  <!-- Replace with your valid API key -->
-            
+
             <!-- Meta-data for Flutter theme -->
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
@@ -39,6 +35,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+            <!-- Meta-data for the Google Maps API Key -->
+        <meta-data
+              android:name="com.google.android.geo.API_KEY"
+              android:value="AIzaSyBYSfMMUGh0UAI1cYJmA5zfoAyW8gCWYmU"/>  <!-- Replace with your valid API key -->
     </application>
 
     <!-- Required to query activities that can process text -->

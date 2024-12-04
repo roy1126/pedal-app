@@ -10,18 +10,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_maps_flutter: ^2.10.0  # Update to the latest compatible version
-  google_maps_flutter_web: ^0.5.10  # Update to the latest web version
+  google_maps_flutter: ^2.5.0  # Keep this version
+  google_maps_flutter_web: ^0.5.10  # Keep this version
   file_picker: ^8.1.4
-  google_maps_webservice: ^0.0.19  # Updated for place search functionality
-  location: ^7.0.1
+  location: ^7.0.1 
   cupertino_icons: ^1.0.8
   route_manager: ^2.0.2
   get: ^4.6.6
-  http: ^0.13.6  # Downgraded to compatible version
+  http: ^1.2.2 # Make sure it's compatible with Dart SDK
   json_annotation: ^4.9.0
   json_serializable: ^6.9.0
-  geolocator: ^8.0.0
+  geolocator: ^13.0.2
+  flutter_polyline_points: ^2.1.0
+  flutter_svg: ^2.0.16
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.3.3
+  firebase_database: ^11.1.6
+  firebase_storage: ^12.3.6
 
 dev_dependencies:
   flutter_test:

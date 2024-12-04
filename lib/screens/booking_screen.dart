@@ -1,233 +1,388 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-=======
->>>>>>> Stashed changes
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:geolocator/geolocator.dart';
-
-import '../controller/main_controller.dart';
 
 class BookingScreen extends StatefulWidget {
+  const BookingScreen({Key? key}) : super(key: key);
+
   @override
-  _BookingScreenState createState() => _BookingScreenState();
+  State<BookingScreen> createState() => _BookingScreenState();
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final TextEditingController fromController = TextEditingController();
-  final TextEditingController destinationController = TextEditingController();
+  late GoogleMapController _mapController;
+  static const LatLng _initialPosition =
+      LatLng(37.7749, -122.4194); // San Francisco, CA
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {}; // Set to store polylines
+  final TextEditingController _fromController = TextEditingController();
+  final TextEditingController _toController = TextEditingController();
 
-<<<<<<< Updated upstream
-  bool isPWD = false; // Variable to check if user is eligible for PWD discount
-  final String googleApiKey =
-      "AIzaSyCyLNeZ9Flp2v7yM0AccRqKkRwd-LlPaKA"; // Replace with your actual API key
-  double estimatedDistance = 0.0; // in kilometers
-=======
-  final String googleApiKey = "AIzaSyDnXprchK9H4LXeUaEHr4yUVKqJGFtW5iY";
-  double estimatedDistance = 0.0;
->>>>>>> Stashed changes
-  double estimatedPrice = 0.0;
-  bool isBookingConfirmed = false;
-  LatLng? fromLocation;
-  LatLng? toLocation;
+  List<dynamic> _fromPlaceSuggestions = [];
+  List<dynamic> _toPlaceSuggestions = [];
 
-  late GoogleMapController mapController;
+  String _eta = "";
+  String _price = "";
 
-  // Method to get current location
-  Future<void> getCurrentLocation() async {
-    try {
-      final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      setState(() {
-        fromLocation = LatLng(position.latitude, position.longitude);
-        fromController.text = "Lat: ${position.latitude}, Long: ${position.longitude}";
-      });
-      mapController.animateCamera(CameraUpdate.newLatLng(fromLocation!));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error getting location: $e")),
-      );
-    }
-  }
+  LatLng? _fromLocation;
+  LatLng? _toLocation;
 
-  // Method to calculate distance and price
-  Future<void> calculateDistanceAndPrice() async {
-    if (fromController.text.isEmpty || destinationController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter both locations")),
-      );
-      return;
-    }
+  // Replace with your actual Google API Key
+  final String _googleAPIKey = "AIzaSyBYSfMMUGh0UAI1cYJmA5zfoAyW8gCWYmU";
 
-    final url = Uri.parse(
-        "https://maps.googleapis.com/maps/api/distancematrix/json?origins=${fromController.text}&destinations=${destinationController.text}&key=$googleApiKey");
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final distanceMeters = data['rows'][0]['elements'][0]['distance']['value'];
-        final distanceKm = distanceMeters / 1000; // Convert to kilometers
-        final baseRate = 50.0;
-        final ratePerKm = 10.0;
-
-        setState(() {
-          estimatedDistance = distanceKm;
-          estimatedPrice = baseRate + (ratePerKm * distanceKm);
-        });
-      } else {
-        throw Exception("Failed to fetch distance");
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching distance: $error")),
-      );
-    }
-  }
-
-  void confirmBooking() {
-    setState(() {
-      isBookingConfirmed = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Booking Confirmed! Driver is on the way.")),
-    );
-  }
-
-  void cancelBooking() {
-    setState(() {
-      isBookingConfirmed = false;
-    });
-  }
+  // Philippine Pricing Constants
+  final double baseFare = 40.0; // PHP 40
+  final double ratePerKm = 15.0; // PHP 15 per kilometer
+  final double ratePerMinute = 2.0; // PHP 2 per minute
 
   @override
   Widget build(BuildContext context) {
+    // Mobile constraints
+    double mobileWidth = 400; // Maximum width for mobile
+    double mobileHeight = 600; // Maximum height for mobile
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    // Ensure width and height are within mobile constraints
+    screenWidth = screenWidth > mobileWidth ? mobileWidth : screenWidth;
+    screenHeight = screenHeight > mobileHeight ? mobileHeight : screenHeight;
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: const Text("Booking Screen"),
+        backgroundColor: Colors.blue,
+      ),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 14,
+            ),
+            onMapCreated: (controller) {
+              _mapController = controller;
+            },
+            markers: _markers,
+            polylines: _polylines, // Add the polyline to the map
+          ),
+          Positioned(
+            bottom: 80,
+            left: 20,
+            right: 20,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!isBookingConfirmed) ...[
-                  // Input Fields
-                  buildInputFields(),
-                  const SizedBox(height: 10),
-
-                  // Distance and Price
-                  if (estimatedDistance > 0) buildDistanceAndPriceDisplay(),
-
-                  const SizedBox(height: 20),
-
-                  // Confirm Button
-                  if (estimatedPrice > 0)
-                    ElevatedButton(
-                      onPressed: confirmBooking,
-                      child: const Text("Confirm Booking"),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: const TextStyle(fontSize: 18),
-                      ),
-                    ),
-                ] else ...[
-                  // Booking Confirmation Details
-                  Text(
-                    "Driver is on the way!",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  Text("From: ${fromController.text}"),
-                  Text("To: ${destinationController.text}"),
-                  Text("Price: PHP ${estimatedPrice.toStringAsFixed(2)}"),
-                  const SizedBox(height: 20),
-
-                  ElevatedButton(
-                    onPressed: cancelBooking,
-                    child: const Text("Cancel Booking"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ],
-
-                // Map Display
-                Container(
-                  height: 300,
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: fromLocation ?? LatLng(0.0, 0.0),
-                      zoom: 14.0,
-                    ),
-                    markers: {
-                      if (fromLocation != null)
-                        Marker(markerId: MarkerId("from"), position: fromLocation!),
-                      if (toLocation != null)
-                        Marker(markerId: MarkerId("to"), position: toLocation!),
-                    },
-                    onMapCreated: (GoogleMapController controller) {
-                      mapController = controller;
-                    },
-                    myLocationEnabled: true,
-                  ),
+                _buildLocationInput(
+                  label: "From",
+                  controller: _fromController,
+                  onPlaceSelected: (place) {
+                    _setMarker(place['lat'], place['lng'], "From");
+                    _fromLocation = LatLng(place['lat'], place['lng']);
+                    _calculateETAandPrice();
+                    _clearSuggestions('from');
+                    _updatePolyline();
+                  },
+                  suggestions: _fromPlaceSuggestions,
+                  onChanged: (query) {
+                    if (query.isNotEmpty) {
+                      _fetchPlaces(query, "from");
+                    }
+                  },
                 ),
+                const SizedBox(height: 10),
+                _buildLocationInput(
+                  label: "To",
+                  controller: _toController,
+                  onPlaceSelected: (place) {
+                    _setMarker(place['lat'], place['lng'], "To");
+                    _toLocation = LatLng(place['lat'], place['lng']);
+                    _calculateETAandPrice();
+                    _clearSuggestions('to');
+                    _updatePolyline();
+                  },
+                  suggestions: _toPlaceSuggestions,
+                  onChanged: (query) {
+                    if (query.isNotEmpty) {
+                      _fetchPlaces(query, "to");
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                _buildSummary(),
               ],
             ),
           ),
-        ),
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Booking confirmed!")),
+                );
+              },
+              child: const Text("Confirm Booking"),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Column buildInputFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Current Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 5),
-        TextField(
-          controller: fromController,
-          decoration: InputDecoration(
-            hintText: "Enter your current location",
-            prefixIcon: const Icon(Icons.location_on),
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.my_location),
-              onPressed: getCurrentLocation,
+  Widget _buildLocationInput({
+    required String label,
+    required TextEditingController controller,
+    required Function(Map<String, dynamic> place) onPlaceSelected,
+    required List<dynamic> suggestions,
+    required Function(String) onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 40,
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: label,
+                border: InputBorder.none,
+              ),
+              onChanged: onChanged,
             ),
-            border: OutlineInputBorder(),
           ),
-        ),
-        const SizedBox(height: 10),
-        const Text("Destination", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 5),
-        TextField(
-          controller: destinationController,
-          decoration: InputDecoration(
-            hintText: "Enter your destination",
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: calculateDistanceAndPrice,
-          child: const Text("Calculate Distance & Price"),
-        ),
-      ],
+          if (suggestions.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              color: Colors.white,
+              height: 150,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: suggestions.length,
+                itemBuilder: (context, index) {
+                  final place = suggestions[index];
+                  return ListTile(
+                    title: Text(place['description']),
+                    onTap: () {
+                      controller.text = place['description'];
+                      _fetchPlaceDetails(place['place_id'], onPlaceSelected);
+                      _clearSuggestions(label);
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Column buildDistanceAndPriceDisplay() {
+  Future<void> _fetchPlaces(String query, String type) async {
+    final url =
+        'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$_googleAPIKey';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          if (type == "from") {
+            _fromPlaceSuggestions = data['predictions'];
+          } else {
+            _toPlaceSuggestions = data['predictions'];
+          }
+        });
+      } else {
+        throw Exception(
+            'Failed to load places: ${response.statusCode}, ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching places: $e');
+    }
+  }
+
+  Future<void> _fetchPlaceDetails(String placeId,
+      Function(Map<String, dynamic> place) onPlaceSelected) async {
+    final detailsUrl =
+        'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$_googleAPIKey';
+
+    final response = await http.get(Uri.parse(detailsUrl));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['result'] != null) {
+        final result = data['result'];
+        final lat = result['geometry']['location']['lat'];
+        final lng = result['geometry']['location']['lng'];
+
+        onPlaceSelected({'lat': lat, 'lng': lng});
+      }
+    } else {
+      throw Exception('Failed to load place details');
+    }
+  }
+
+  void _setMarker(double lat, double lng, String label) {
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(label),
+          position: LatLng(lat, lng),
+          infoWindow: InfoWindow(
+            title: label,
+          ),
+        ),
+      );
+    });
+
+    _mapController.animateCamera(
+      CameraUpdate.newLatLngZoom(LatLng(lat, lng), 14),
+    );
+  }
+
+  Future<void> _fetchRoute(LatLng from, LatLng to) async {
+    final url =
+        'http://192.168.18.86:3000/directions?origin=${from.latitude},${from.longitude}&destination=${to.latitude},${to.longitude}';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['routes'].isNotEmpty) {
+          final route = data['routes'][0];
+          final polylinePoints = route['overview_polyline']['points'];
+          final decodedPoints = _decodePolyline(polylinePoints);
+
+          setState(() {
+            _polylines.clear();
+            _setPolyline(decodedPoints);
+          });
+
+          // Call to calculate pricing after the route is fetched
+          _calculatePricing(route);
+        }
+      } else {
+        throw Exception('Failed to load route: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching route: $e');
+    }
+  }
+
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> polyline = [];
+    int index = 0;
+    int len = encoded.length;
+    int lat = 0;
+    int lng = 0;
+
+    while (index < len) {
+      int result = 0;
+      int shift = 0;
+      int byte;
+      do {
+        byte = encoded.codeUnitAt(index) - 63;
+        result |= (byte & 0x1F) << shift;
+        shift += 5;
+        index++;
+      } while (byte >= 0x20);
+      int deltaLat = ((result & 0x1F) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += deltaLat;
+
+      result = 0;
+      shift = 0;
+      do {
+        byte = encoded.codeUnitAt(index) - 63;
+        result |= (byte & 0x1F) << shift;
+        shift += 5;
+        index++;
+      } while (byte >= 0x20);
+
+      int deltaLng = ((result & 0x1F) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += deltaLng;
+
+      polyline.add(LatLng(lat / 1E5, lng / 1E5));
+    }
+
+    return polyline;
+  }
+
+  void _setPolyline(List<LatLng> points) {
+    setState(() {
+      _polylines.add(Polyline(
+        polylineId: PolylineId("route"),
+        points: points,
+        color: Colors.blue,
+        width: 5,
+      ));
+    });
+  }
+
+  Future<void> _updatePolyline() async {
+    if (_fromLocation != null && _toLocation != null) {
+      await _fetchRoute(_fromLocation!, _toLocation!);
+    }
+  }
+
+  // Calculate ETA and price
+  void _calculateETAandPrice() async {
+    if (_fromLocation != null && _toLocation != null) {
+      await _fetchRoute(_fromLocation!, _toLocation!);
+    }
+  }
+
+  // Calculate Pricing using Philippine fare model
+  void _calculatePricing(Map<String, dynamic> route) {
+    final legs = route['legs'][0];
+    final distance = legs['distance']['value']; // in meters
+    final duration = legs['duration']['value']; // in seconds
+
+    final distanceKm = distance / 1000; // Convert meters to kilometers
+    final durationMinutes = duration / 60; // Convert seconds to minutes
+
+    // Pricing formula based on the Philippine model
+    final distanceFare = distanceKm * ratePerKm;
+    final timeFare = durationMinutes * ratePerMinute;
+
+    final totalFare = baseFare + distanceFare + timeFare;
+
+    setState(() {
+      _eta = "ETA: ${(duration / 60).round()} minutes"; // ETA in minutes
+      _price =
+          "Price: PHP ${totalFare.toStringAsFixed(2)}"; // Display PHP price
+    });
+  }
+
+  void _clearSuggestions(String type) {
+    setState(() {
+      if (type == 'from') {
+        _fromPlaceSuggestions.clear();
+      } else {
+        _toPlaceSuggestions.clear();
+      }
+    });
+  }
+
+  // Summary display
+  Widget _buildSummary() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Estimated Distance: ${estimatedDistance.toStringAsFixed(2)} km"),
-        Text("Estimated Price: PHP ${estimatedPrice.toStringAsFixed(2)}"),
+        Text(_eta),
+        Text(_price),
       ],
     );
   }

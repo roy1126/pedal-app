@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268401072046",
+    "project_id": "pedal-app-fcfbc",
+    "storage_bucket": "pedal-app-fcfbc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268401072046:android:f79e7a34b1dc6d46881a3f",
+        "android_client_info": {
+          "package_name": "com.pedalapp.google_maps_in_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSgoYbXdrTRAXhBbE6zFgZ9BZENd__ok4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
