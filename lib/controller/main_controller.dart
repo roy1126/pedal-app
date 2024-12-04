@@ -1,9 +1,7 @@
-import 'dart:developer';
 
 import 'package:get/get.dart';
 import 'package:pedal_application/model/user-model.dart';
-import 'dart:convert'; // For JSON parsing
-import '../model/appData.model.dart';
+// For JSON parsing
 
 class MainController extends GetxController {
   var _isLogin = false;

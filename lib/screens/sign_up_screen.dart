@@ -190,7 +190,6 @@ class SignUpScreen extends StatelessWidget {
                         onPressed: () {
                           // Sign-up action
                         },
-                        child: const Text('Sign Up'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.tealAccent[700],
                           foregroundColor: Colors.white, // Text color
@@ -199,6 +198,7 @@ class SignUpScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
+                        child: const Text('Sign Up'),
                       ),
                     ],
                   ),

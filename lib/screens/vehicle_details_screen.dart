@@ -5,7 +5,7 @@ void main() {
 }
 
 class VehicleDetailsScreen extends StatelessWidget {
-  const VehicleDetailsScreen({Key? key}) : super(key: key);
+  const VehicleDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +17,8 @@ class VehicleDetailsScreen extends StatelessWidget {
 }
 
 class CarRegistrationScreen extends StatefulWidget {
+  const CarRegistrationScreen({super.key});
+
   @override
   _CarRegistrationScreenState createState() => _CarRegistrationScreenState();
 }
@@ -55,7 +57,7 @@ class _CarRegistrationScreenState extends State<CarRegistrationScreen> {
               const Center(
                 child: Text(
                   "Car Registration!",
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.teal,

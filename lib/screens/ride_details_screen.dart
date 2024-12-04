@@ -7,7 +7,7 @@ class RideDetailsScreen extends StatelessWidget {
   final double distance;
   final double fare;
 
-  const RideDetailsScreen({
+  const RideDetailsScreen({super.key, 
     required this.fromLocation,
     required this.toLocation,
     required this.distance,

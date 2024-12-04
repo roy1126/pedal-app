@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 class BookingScreen extends StatefulWidget {
-  const BookingScreen({Key? key}) : super(key: key);
+  const BookingScreen({super.key});
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -122,10 +122,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SnackBar(content: Text("Booking confirmed!")),
                 );
               },
-              child: const Text("Confirm Booking"),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
               ),
+              child: const Text("Confirm Booking"),
             ),
           ),
         ],

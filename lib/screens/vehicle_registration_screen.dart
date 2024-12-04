@@ -7,7 +7,7 @@ void main() {
 }
 
 class VehicleRegistrationScreen extends StatelessWidget {
-  const VehicleRegistrationScreen({Key? key}) : super(key: key);
+  const VehicleRegistrationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +19,8 @@ class VehicleRegistrationScreen extends StatelessWidget {
 }
 
 class CarRegistrationScreen extends StatefulWidget {
+  const CarRegistrationScreen({super.key});
+
   @override
   _CarRegistrationScreenState createState() => _CarRegistrationScreenState();
 }
@@ -246,7 +248,7 @@ class _CarRegistrationScreenState extends State<CarRegistrationScreen> {
               ],
             ),
           );
-        }).toList(),
+        }),
         files.length < 3
             ? ElevatedButton(
                 onPressed: () => pickFile(fileType),
