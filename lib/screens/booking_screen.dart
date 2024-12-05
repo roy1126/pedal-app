@@ -1,11 +1,9 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:pedal_application/screens/home_screen.dart';
-import 'dart:math';
-
 import '../controller/main_controller.dart';
 import '../model/booking.model.dart';
 import '../model/location.model.dart';
@@ -18,14 +16,13 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final random = Random();
-  final mainController = Get.put(MainController());
+  final Random random = Random();
+  final MainController mainController = Get.put(MainController());
   bool _isLoading = false;
   late GoogleMapController _mapController;
-  static const LatLng _initialPosition =
-      LatLng(37.7749, -122.4194); // San Francisco, CA
-  final Set<Marker> _markers = {};
-  final Set<Polyline> _polylines = {}; // Set to store polylines
+  static const LatLng _initialPosition = LatLng(37.7749, -122.4194);
+  final Set<Marker> _markers = <Marker>{};
+  final Set<Polyline> _polylines = <Polyline>{};
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
 
@@ -38,13 +35,12 @@ class _BookingScreenState extends State<BookingScreen> {
   LatLng? _fromLocation;
   LatLng? _toLocation;
 
-  // Replace with your actual Google API Key
   final String _googleAPIKey = "AIzaSyBYSfMMUGh0UAI1cYJmA5zfoAyW8gCWYmU";
 
-  // Philippine Pricing Constants
-  final double baseFare = 40.0; // PHP 40
-  final double ratePerKm = 15.0; // PHP 15 per kilometer
-  final double ratePerMinute = 2.0; // PHP 2 per minute
+  final double baseFare = 40.0;
+  final double ratePerKm = 15.0;
+  final double ratePerMinute = 2.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,245 +48,154 @@ class _BookingScreenState extends State<BookingScreen> {
         title: const Text("Booking Screen"),
         backgroundColor: Colors.blue,
       ),
-      body: _isLoading
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Vertically center
-              crossAxisAlignment:
-                  CrossAxisAlignment.center, // Horizontally center
-              children: [
-                CircularProgressIndicator(
-                  strokeWidth: 8,
-                ),
-                SizedBox(
-                    height:
-                        10), // Adds some spacing between the spinner and text
-                Text("Loading..."),
-              ],
-            ) // Shows the loading spinner
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(40.0),
-                            height: 300, // Fixed height for the map
-                            child: GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                target: _initialPosition,
-                                zoom: 14,
-                              ),
-                              onMapCreated: (controller) {
-                                _mapController = controller;
-                              },
-                              markers: _markers,
-                              polylines:
-                                  _polylines, // Add the polyline to the map
-                            ),
-                          ),
-                          // Adjust to overlay UI below the map
-                          Padding(
-                            padding: const EdgeInsets.all(40.0),
-                            child: Column(
-                              children: [
-                                _buildLocationInput(
-                                  label: "From",
-                                  controller: _fromController,
-                                  onPlaceSelected: (place) {
-                                    _setMarker(
-                                        place['lat'], place['lng'], "From");
-                                    _fromLocation =
-                                        LatLng(place['lat'], place['lng']);
-                                    _calculateETAandPrice();
-                                    _clearSuggestions('from');
-                                    _updatePolyline();
-                                  },
-                                  suggestions: _fromPlaceSuggestions,
-                                  onChanged: (query) {
-                                    if (query.isNotEmpty) {
-                                      _fetchPlaces(query, "from");
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                _buildLocationInput(
-                                  label: "To",
-                                  controller: _toController,
-                                  onPlaceSelected: (place) {
-                                    _setMarker(
-                                        place['lat'], place['lng'], "To");
-                                    _toLocation =
-                                        LatLng(place['lat'], place['lng']);
-                                    _calculateETAandPrice();
-                                    _clearSuggestions('to');
-                                    _updatePolyline();
-                                  },
-                                  suggestions: _toPlaceSuggestions,
-                                  onChanged: (query) {
-                                    if (query.isNotEmpty) {
-                                      _fetchPlaces(query, "to");
-                                    }
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                Text(_toController.text),
-                                Text(_fromController.text),
-                                _buildSummary(),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (_fromLocation == null ||
-                                        _toLocation == null) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                "Please complete your location and destination.")),
-                                      );
-                                      return;
-                                    }
-
-                                    setState(() {
-                                      _isLoading = true;
-
-                                      final booking = Booking(
-                                        bookingId:
-                                            'bookingId${random.nextInt(100)}',
-                                        driverId: "",
-                                        customerId:
-                                            mainController.getCurrentUser().id,
-                                        isPwd: true,
-                                        pwdType: "AGED",
-                                        noteToDriver:
-                                            "Pwede po patulong ako magbuhat ng gamit sa sasakyan.",
-                                        dateCreated: DateTime.now(),
-                                        dateCompleted: null,
-                                        isActive: true,
-                                        bookingStatus: "PICK-UP",
-                                        distanceKM: 10.5,
-                                        conversation: [],
-                                        startLocation: Location(
-                                          latitude: 14.5995,
-                                          longitude: 120.9842,
-                                          address:
-                                              "Rizal Park, Ermita, Manila, Philippines",
-                                          city: "Manila",
-                                          state: "Metro Manila",
-                                          country: "Philippines",
-                                          postalCode: "1000",
-                                        ),
-                                        destination: Location(
-                                          latitude: 14.5995,
-                                          longitude: 120.9842,
-                                          address:
-                                              "Rizal Park, Ermita, Manila, Philippines",
-                                          city: "Manila",
-                                          state: "Metro Manila",
-                                          country: "Philippines",
-                                          postalCode: "1000",
-                                        ),
-                                      );
-                                      mainController.addBooking(booking);
-                                    });
-
-                                    Get.snackbar(
-                                      'Success',
-                                      'Booking is now created!',
-                                      snackPosition: SnackPosition.BOTTOM,
-                                    );
-
-                                    Future.delayed(Duration(seconds: 3), () {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-
-                                      Get.to(() => HomeScreen());
-                                    });
-                                  },
-                                  child: const Text("Confirm Booking"),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.all(16),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildContent(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildLocationInput({
-    required String label,
-    required TextEditingController controller,
-    required Function(Map<String, dynamic> place) onPlaceSelected,
-    required List<dynamic> suggestions,
-    required Function(String) onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 40,
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                hintText: label,
-                border: InputBorder.none,
-              ),
-              onChanged: onChanged,
+  Widget _buildContent() {
+    return _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                _buildLocationFields(),
+                const SizedBox(height: 20),
+                _buildSummary(),
+                ElevatedButton(
+                  onPressed: _confirmBooking,
+                  child: const Text("Confirm Booking"),
+                ),
+              ],
             ),
-          ),
-          if (suggestions.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              color: Colors.white,
-              height: 150,
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: suggestions.length,
-                itemBuilder: (context, index) {
-                  final place = suggestions[index];
-                  return ListTile(
-                    title: Text(place['description']),
-                    onTap: () {
-                      controller.text = place['description'];
-                      _fetchPlaceDetails(place['place_id'], onPlaceSelected);
-                      _clearSuggestions(label);
-                    },
-                  );
+          );
+  }
+
+  Widget _buildLocationFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.radio_button_checked, color: Colors.blue, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildLocationField(
+                controller: _fromController,
+                hint: "Enter pickup location",
+                onChanged: (value) => _fetchPlaces(value, "from"),
+                suggestions: _fromPlaceSuggestions,
+                onSelectSuggestion: (place) {
+                  _fetchPlaceDetails(place['place_id'], (details) {
+                    setState(() {
+                      _fromLocation = LatLng(details['lat'], details['lng']);
+                    });
+                  });
                 },
+                onMapSelect: () => _selectOnMap((selectedLocation) {
+                  setState(() {
+                    _fromLocation = selectedLocation;
+                    _fromController.text = "Location selected on map";
+                  });
+                }),
               ),
             ),
-        ],
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(Icons.radio_button_off, color: Colors.green, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildLocationField(
+                controller: _toController,
+                hint: "Enter drop-off location",
+                onChanged: (value) => _fetchPlaces(value, "to"),
+                suggestions: _toPlaceSuggestions,
+                onSelectSuggestion: (place) {
+                  _fetchPlaceDetails(place['place_id'], (details) {
+                    setState(() {
+                      _toLocation = LatLng(details['lat'], details['lng']);
+                    });
+                  });
+                },
+                onMapSelect: () => _selectOnMap((selectedLocation) {
+                  setState(() {
+                    _toLocation = selectedLocation;
+                    _toController.text = "Location selected on map";
+                  });
+                }),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationField({
+    required TextEditingController controller,
+    required String hint,
+    required Function(String) onChanged,
+    required List<dynamic> suggestions,
+    required Function(Map<String, dynamic>) onSelectSuggestion,
+    required VoidCallback onMapSelect,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+            suffixIcon: IconButton(
+              icon: Icon(Icons.map, color: Colors.blue),
+              onPressed: onMapSelect,
+            ),
+          ),
+          onChanged: onChanged,
+        ),
+        if (suggestions.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: suggestions.length,
+            itemBuilder: (context, index) {
+              final place = suggestions[index];
+              return ListTile(
+                title: Text(place['description']),
+                onTap: () => onSelectSuggestion(place),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Future<void> _selectOnMap(Function(LatLng) onLocationSelected) async {
+    final LatLng? selectedLocation = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapSelectionScreen(),
       ),
     );
+
+    if (selectedLocation != null) {
+      onLocationSelected(selectedLocation);
+    }
   }
 
   Future<void> _fetchPlaces(String query, String type) async {
     final url =
-        'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&key=$_googleAPIKey';
+        'http://localhost:4000/places?input=$query'; // Local server for places
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -303,183 +208,102 @@ class _BookingScreenState extends State<BookingScreen> {
             _toPlaceSuggestions = data['predictions'];
           }
         });
-      } else {
-        throw Exception(
-            'Failed to load places: ${response.statusCode}, ${response.body}');
       }
     } catch (e) {
       print('Error fetching places: $e');
     }
   }
 
-  Future<void> _fetchPlaceDetails(String placeId,
-      Function(Map<String, dynamic> place) onPlaceSelected) async {
-    final detailsUrl =
-        'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$_googleAPIKey';
-
-    final response = await http.get(Uri.parse(detailsUrl));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['result'] != null) {
-        final result = data['result'];
-        final lat = result['geometry']['location']['lat'];
-        final lng = result['geometry']['location']['lng'];
-
-        onPlaceSelected({'lat': lat, 'lng': lng});
-      }
-    } else {
-      throw Exception('Failed to load place details');
-    }
-  }
-
-  void _setMarker(double lat, double lng, String label) {
-    setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(label),
-          position: LatLng(lat, lng),
-          infoWindow: InfoWindow(
-            title: label,
-          ),
-        ),
-      );
-    });
-
-    _mapController.animateCamera(
-      CameraUpdate.newLatLngZoom(LatLng(lat, lng), 14),
-    );
-  }
-
-  Future<void> _fetchRoute(LatLng from, LatLng to) async {
+  Future<void> _fetchPlaceDetails(
+      String placeId, Function(Map<String, dynamic>) onPlaceSelected) async {
     final url =
-        'http://192.168.18.86:3000/directions?origin=${from.latitude},${from.longitude}&destination=${to.latitude},${to.longitude}';
+        'http://localhost:4000/places/details?place_id=$placeId'; // Ensure this is correct
 
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['routes'].isNotEmpty) {
-          final route = data['routes'][0];
-          final polylinePoints = route['overview_polyline']['points'];
-          final decodedPoints = _decodePolyline(polylinePoints);
+        final lat = data['result']['geometry']['location']['lat'];
+        final lng = data['result']['geometry']['location']['lng'];
 
-          setState(() {
-            _polylines.clear();
-            _setPolyline(decodedPoints);
-          });
-
-          // Call to calculate pricing after the route is fetched
-          _calculatePricing(route);
-        }
+        onPlaceSelected({'lat': lat, 'lng': lng});
       } else {
-        throw Exception('Failed to load route: ${response.statusCode}');
+        print('Error fetching place details: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching route: $e');
+      print('Error fetching place details: $e');
     }
   }
 
-  List<LatLng> _decodePolyline(String encoded) {
-    List<LatLng> polyline = [];
-    int index = 0;
-    int len = encoded.length;
-    int lat = 0;
-    int lng = 0;
-
-    while (index < len) {
-      int result = 0;
-      int shift = 0;
-      int byte;
-      do {
-        byte = encoded.codeUnitAt(index) - 63;
-        result |= (byte & 0x1F) << shift;
-        shift += 5;
-        index++;
-      } while (byte >= 0x20);
-      int deltaLat = ((result & 0x1F) != 0 ? ~(result >> 1) : (result >> 1));
-      lat += deltaLat;
-
-      result = 0;
-      shift = 0;
-      do {
-        byte = encoded.codeUnitAt(index) - 63;
-        result |= (byte & 0x1F) << shift;
-        shift += 5;
-        index++;
-      } while (byte >= 0x20);
-
-      int deltaLng = ((result & 0x1F) != 0 ? ~(result >> 1) : (result >> 1));
-      lng += deltaLng;
-
-      polyline.add(LatLng(lat / 1E5, lng / 1E5));
-    }
-
-    return polyline;
-  }
-
-  void _setPolyline(List<LatLng> points) {
-    setState(() {
-      _polylines.add(Polyline(
-        polylineId: PolylineId("route"),
-        points: points,
-        color: Colors.blue,
-        width: 5,
-      ));
-    });
-  }
-
-  Future<void> _updatePolyline() async {
-    if (_fromLocation != null && _toLocation != null) {
-      await _fetchRoute(_fromLocation!, _toLocation!);
-    }
-  }
-
-  // Calculate ETA and price
-  void _calculateETAandPrice() async {
-    if (_fromLocation != null && _toLocation != null) {
-      await _fetchRoute(_fromLocation!, _toLocation!);
-    }
-  }
-
-  // Calculate Pricing using Philippine fare model
-  void _calculatePricing(Map<String, dynamic> route) {
-    final legs = route['legs'][0];
-    final distance = legs['distance']['value']; // in meters
-    final duration = legs['duration']['value']; // in seconds
-
-    final distanceKm = distance / 1000; // Convert meters to kilometers
-    final durationMinutes = duration / 60; // Convert seconds to minutes
-
-    // Pricing formula based on the Philippine model
-    final distanceFare = distanceKm * ratePerKm;
-    final timeFare = durationMinutes * ratePerMinute;
-
-    final totalFare = baseFare + distanceFare + timeFare;
-
-    setState(() {
-      _eta = "ETA: ${(duration / 60).round()} minutes"; // ETA in minutes
-      _price =
-          "Price: PHP ${totalFare.toStringAsFixed(2)}"; // Display PHP price
-    });
-  }
-
-  void _clearSuggestions(String type) {
-    setState(() {
-      if (type == 'from') {
-        _fromPlaceSuggestions.clear();
-      } else {
-        _toPlaceSuggestions.clear();
-      }
-    });
-  }
-
-  // Summary display
   Widget _buildSummary() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_eta),
-        Text(_price),
+        Text(_eta, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        Text(_price,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ],
+    );
+  }
+
+  void _confirmBooking() {
+    if (_fromLocation == null || _toLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text("Please select both pickup and drop-off locations.")),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        double distance = 5.0; // Sample distance in km
+        double duration = 10.0; // Sample duration in minutes
+        _eta = "ETA: ${duration} mins";
+        _price =
+            "Price: \$${(baseFare + distance * ratePerKm + duration * ratePerMinute).toStringAsFixed(2)}";
+        _isLoading = false;
+      });
+    });
+  }
+}
+
+class MapSelectionScreen extends StatefulWidget {
+  @override
+  _MapSelectionScreenState createState() => _MapSelectionScreenState();
+}
+
+class _MapSelectionScreenState extends State<MapSelectionScreen> {
+  late GoogleMapController _mapController;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = true;
+  static const LatLng _initialPosition = LatLng(37.7749, -122.4194);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Select Location on Map")),
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 14.0,
+            ),
+            onMapCreated: (controller) {
+              _mapController = controller;
+            },
+            onTap: (LatLng latLng) {
+              Navigator.pop(context, latLng);
+            },
+          ),
+        ],
+      ),
     );
   }
 }
