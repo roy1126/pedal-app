@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pedal_application/controller/main_controller.dart';
-import 'package:pedal_application/screens/booking_screen.dart';
 import 'package:pedal_application/screens/home_screen.dart';
 import 'sign_up_screen.dart';
 

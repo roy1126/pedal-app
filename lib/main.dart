@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pedal_application/screens/home_screen.dart';
 import 'package:pedal_application/screens/login_screen.dart';
-import 'package:route_manager/route_manager.dart';
-import 'src/locations.dart' as locations;
 
 import 'screens/booking_screen.dart';
 import 'screens/sign_up_screen.dart';

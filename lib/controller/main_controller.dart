@@ -1,8 +1,7 @@
 
 import 'package:get/get.dart';
 import 'package:pedal_application/model/user-model.dart';
-import 'dart:convert'; // For JSON parsing
-import '../model/appData.model.dart';
+// For JSON parsing
 import '../model/booking.model.dart';
 import '../model/location.model.dart';
 

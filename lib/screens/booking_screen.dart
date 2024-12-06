@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../controller/main_controller.dart';
-import '../model/booking.model.dart';
-import '../model/location.model.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -264,7 +262,7 @@ class _BookingScreenState extends State<BookingScreen> {
       setState(() {
         double distance = 5.0; // Sample distance in km
         double duration = 10.0; // Sample duration in minutes
-        _eta = "ETA: ${duration} mins";
+        _eta = "ETA: $duration mins";
         _price =
             "Price: \$${(baseFare + distance * ratePerKm + duration * ratePerMinute).toStringAsFixed(2)}";
         _isLoading = false;
@@ -274,6 +272,8 @@ class _BookingScreenState extends State<BookingScreen> {
 }
 
 class MapSelectionScreen extends StatefulWidget {
+  const MapSelectionScreen({super.key});
+
   @override
   _MapSelectionScreenState createState() => _MapSelectionScreenState();
 }
@@ -281,7 +281,7 @@ class MapSelectionScreen extends StatefulWidget {
 class _MapSelectionScreenState extends State<MapSelectionScreen> {
   late GoogleMapController _mapController;
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = true;
+  final bool _isLoading = true;
   static const LatLng _initialPosition = LatLng(37.7749, -122.4194);
 
   @override

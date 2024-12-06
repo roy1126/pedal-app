@@ -5,7 +5,7 @@ import 'package:pedal_application/screens/booking_screen.dart';
 import '../controller/main_controller.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -213,7 +213,7 @@ class BookingCard extends StatelessWidget {
   final String date;
   final String status;
 
-  BookingCard({
+  const BookingCard({super.key, 
     required this.bookingId,
     required this.customerName,
     required this.date,
