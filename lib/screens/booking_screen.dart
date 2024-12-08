@@ -17,6 +17,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  final TextEditingController _noteController = TextEditingController();
   bool _isPWD = false;
   String _selectedPWDType = '';
   final Random random = Random();
@@ -104,24 +105,39 @@ class _BookingScreenState extends State<BookingScreen> {
     containerHeight =
         containerHeight > mobileHeight ? mobileHeight : containerHeight;
 
-    double containerWidth = mobileWidth; // Fixed width for mobile
+    double containerWidth = screenWidth < mobileWidth
+        ? screenWidth
+        : mobileWidth; // Adjust width for smaller screens
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Booking Screen"),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.tealAccent[700],
       ),
       body: Center(
         child: Container(
-          width: containerWidth, // Fixed width similar to login page
+          width: containerWidth, // Fixed width adjusted for small screens
           height: containerHeight, // Dynamic height, adjusted like login page
           padding: const EdgeInsets.all(20.0), // Optional padding for better UI
           child: SingleChildScrollView(
             child: Column(
               children: [
+                // Custom Header
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Text(
+                    "Book Now! Your City Your Way!",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.tealAccent[700],
+                    ),
+                  ),
+                ),
                 // Map at the top of the screen
                 Container(
-                  height: 200, // Height for the map
+                  height:
+                      screenHeight * 0.35, // Make map height dynamic as well
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: Colors.grey, // Border color
@@ -140,7 +156,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         : GoogleMap(
                             initialCameraPosition: CameraPosition(
                               target: _initialPosition!,
-                              zoom: 14.0,
+                              zoom: 16.0,
                             ),
                             onMapCreated: (controller) {
                               setState(() {
@@ -162,114 +178,39 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Future<void> _showPWDDialog() async {
-    // List of all PWD types
-    List<String> pwdTypes = [
-      "Vision Impairment",
-      "Hearing Impairment",
-      "Mental Illness",
-      "Intellectual Disability",
-      "Learning Disability",
-      "Autism Spectrum Disorder",
-      "Cerebral Palsy",
-      "Orthopedic Disability",
-      "Psychosocial Disability",
-      "Blindness",
-      "Disability Caused by Chronic Illness",
-      "Leprosy Cured",
-      "Locomotor Disability",
-      "Muscular Dystrophy",
-      "Physical Disability",
-      "Acquired Brain Injury",
-      "Attention Deficit Hyperactivity Disorder",
-      "Chronic Illness",
-      "Dwarfism",
-      "Hemophilia",
-      "Multiple Disabilities",
-      "Sickle Cell Disease",
-      "Speech Impairment",
-      "Thalassemia",
-      "Senior Citizen", // Keep other types as needed
-      "Person with Disability",
-      "Pregnant Woman",
-      "Child Below 5 Years",
-      "Other" // Add "Other" optio
-    ];
-    String? otherInput; // To hold input if "Other" is selected
-
-    return showDialog<void>(
-      context: context,
-      barrierDismissible:
-          false, // Ensure the dialog cannot be dismissed by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select PWD Type'),
-          content: SingleChildScrollView(
-            // Ensure it can scroll if the list is long
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                // ListTile for each PWD type
-                ...pwdTypes.map((type) {
-                  return ListTile(
-                    title: Text(type),
-                    onTap: () {
-                      if (type == "Other") {
-                        // Show the text field if "Other" is selected
-                        showDialog<void>(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Enter Custom PWD Type'),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  TextField(
-                                    maxLength:
-                                        20, // Limit the input to 20 characters
-                                    onChanged: (value) {
-                                      otherInput = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      labelText: 'Custom PWD Type',
-                                    ),
-                                  ),
-                                  SizedBox(height: 16),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedPWDType = otherInput ?? '';
-                                      });
-                                      Navigator.of(context)
-                                          .pop(); // Close the "Other" input dialog
-                                      Navigator.of(context)
-                                          .pop(); // Close the main dialog
-                                    },
-                                    child: const Text('Submit'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      } else {
-                        // Select the predefined PWD type
-                        setState(() {
-                          _selectedPWDType = type;
-                        });
-                        Navigator.of(context).pop(); // Close the dialog
-                      }
-                    },
-                  );
-                }).toList(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // List of all PWD types
+  List<String> pwdTypes = [
+    "Vision Impairment",
+    "Hearing Impairment",
+    "Mental Illness",
+    "Intellectual Disability",
+    "Learning Disability",
+    "Autism Spectrum Disorder",
+    "Cerebral Palsy",
+    "Orthopedic Disability",
+    "Psychosocial Disability",
+    "Blindness",
+    "Disability Caused by Chronic Illness",
+    "Leprosy Cured",
+    "Locomotor Disability",
+    "Muscular Dystrophy",
+    "Physical Disability",
+    "Acquired Brain Injury",
+    "Attention Deficit Hyperactivity Disorder",
+    "Chronic Illness",
+    "Dwarfism",
+    "Hemophilia",
+    "Multiple Disabilities",
+    "Sickle Cell Disease",
+    "Speech Impairment",
+    "Thalassemia",
+    "Senior Citizen", // Keep other types as needed
+    "Person with Disability",
+    "Pregnant Woman",
+    "Child Below 5 Years",
+    "Other" // Add "Other" option if needed
+  ];
+  String? otherInput; // To hold input if "Other" is selected
 
   Widget _buildContent() {
     return _isLoading
@@ -290,9 +231,6 @@ class _BookingScreenState extends State<BookingScreen> {
                       onChanged: (value) {
                         setState(() {
                           _isPWD = value!;
-                          if (_isPWD) {
-                            _showPWDDialog(); // Show PWD selection dialog
-                          }
                         });
                       },
                     ),
@@ -309,6 +247,62 @@ class _BookingScreenState extends State<BookingScreen> {
                     const Text("No"),
                   ],
                 ),
+                // Dropdown for selecting PWD type
+                if (_isPWD)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value:
+                            _selectedPWDType.isEmpty ? null : _selectedPWDType,
+                        decoration: const InputDecoration(
+                          labelText: 'Select PWD Type',
+                        ),
+                        items: pwdTypes.map((type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedPWDType = value!;
+                            // Clear other input when PWD type changes
+                            if (_selectedPWDType != "Other") {
+                              otherInput =
+                                  null; // Clear input when another option is selected
+                            }
+                          });
+                        },
+                      ),
+
+                      // If "Other" is selected, show an input field
+                      if (_selectedPWDType == "Other")
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              otherInput = value;
+                            });
+                          },
+                          maxLength: 20, // Limit input to 20 characters
+                          decoration: const InputDecoration(
+                            labelText: 'Please specify PWD type',
+                            counterText: '', // Hide the default character count
+                          ),
+                        ),
+                    ],
+                  ),
+                // Add the note field for the driver
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _noteController,
+                  maxLength: 500, // Limit to 500 characters
+                  maxLines: 3, // Allow multiple lines
+                  decoration: const InputDecoration(
+                    labelText: 'Note to the driver (max 500 characters)',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 ElevatedButton(
                   onPressed: _confirmBooking,
                   child: const Text("Confirm Booking"),
@@ -324,8 +318,7 @@ class _BookingScreenState extends State<BookingScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.radio_button_checked,
-                color: Colors.blue, size: 20),
+            const Icon(Icons.location_on, color: Colors.green, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: _buildLocationField(
@@ -333,13 +326,20 @@ class _BookingScreenState extends State<BookingScreen> {
                 hint: "Enter pickup location",
                 onChanged: (value) => _fetchPlaces(value, "from"),
                 suggestions: _fromPlaceSuggestions,
-                onSelectSuggestion: (place) {
-                  _fetchPlaceDetails(place['place_id'], (details) {
-                    setState(() {
+                onSelectSuggestion: (place) async {
+                  _fetchPlaceDetails(place['place_id'], (details) async {
+                    setState(() async {
                       _fromLocation = LatLng(details['lat'], details['lng']);
+                      // Await the icon loading here
+                      BitmapDescriptor icon =
+                          await BitmapDescriptor.fromAssetImage(
+                        ImageConfiguration(size: Size(24, 24)),
+                        'lib/assets/location-icon/car.png',
+                      );
                       _markers.add(Marker(
                         markerId: const MarkerId('from_location'),
                         position: _fromLocation!,
+                        icon: icon, // Use the icon after awaiting
                       ));
                       _mapController.animateCamera(
                           CameraUpdate.newLatLng(_fromLocation!));
@@ -348,17 +348,12 @@ class _BookingScreenState extends State<BookingScreen> {
                 },
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.my_location),
-              onPressed: _setCurrentLocationAsFrom,
-              tooltip: 'Use my location',
-            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            const Icon(Icons.radio_button_off, color: Colors.green, size: 20),
+            const Icon(Icons.location_on, color: Colors.red, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: _buildLocationField(
@@ -366,13 +361,20 @@ class _BookingScreenState extends State<BookingScreen> {
                 hint: "Enter drop-off location",
                 onChanged: (value) => _fetchPlaces(value, "to"),
                 suggestions: _toPlaceSuggestions,
-                onSelectSuggestion: (place) {
-                  _fetchPlaceDetails(place['place_id'], (details) {
-                    setState(() {
+                onSelectSuggestion: (place) async {
+                  _fetchPlaceDetails(place['place_id'], (details) async {
+                    setState(() async {
                       _toLocation = LatLng(details['lat'], details['lng']);
+                      // Await the icon loading here
+                      BitmapDescriptor icon =
+                          await BitmapDescriptor.fromAssetImage(
+                        ImageConfiguration(size: Size(24, 24)),
+                        'lib/assets/location-icon/destination.png',
+                      );
                       _markers.add(Marker(
                         markerId: const MarkerId('to_location'),
                         position: _toLocation!,
+                        icon: icon, // Use the icon after awaiting
                       ));
                       _mapController
                           .animateCamera(CameraUpdate.newLatLng(_toLocation!));
@@ -385,24 +387,6 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
       ],
     );
-  }
-
-// New method to set the current location as the "from" location
-  Future<void> _setCurrentLocationAsFrom() async {
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    final LatLng currentLocation =
-        LatLng(position.latitude, position.longitude);
-    setState(() {
-      _fromController.text =
-          'Current Location'; // Optionally set the text to "Current Location"
-      _fromLocation = currentLocation;
-      _markers.add(Marker(
-        markerId: const MarkerId('from_location'),
-        position: currentLocation,
-      ));
-      _mapController.animateCamera(CameraUpdate.newLatLng(currentLocation));
-    });
   }
 
   Widget _buildLocationField({
@@ -515,6 +499,16 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    // Check if the note exceeds 500 characters
+    if (_noteController.text.length > 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Note cannot exceed 500 characters."),
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -526,9 +520,9 @@ class _BookingScreenState extends State<BookingScreen> {
         _polylines.clear();
         _polylines.add(Polyline(
           polylineId: PolylineId('route'),
-          color: Colors.green,
+          color: Colors.black,
           points: value['routePoints'],
-          width: 4, // Adjust this value for a thinner polyline (default is 10)
+          width: 3, // Adjust this value for a thinner polyline (default is 10)
         ));
 
         _moveCameraToRoute(value['routePoints']);
