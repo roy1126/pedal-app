@@ -24,6 +24,9 @@
     defer>
   </script>
 
+  <!-- Include Axios -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
   <!-- Title -->
   <title>google_maps_in_flutter</title>
   <link rel="manifest" href="manifest.json">
@@ -31,5 +34,24 @@
 <body>
   <!-- Flutter app bootstrap script -->
   <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    function getRouteData(from, to) {
+      axios.post('http://localhost:4000/api/route', { from, to })
+        .then(response => {
+          console.log('Route Data:', response.data);
+          // Process the response data here
+        })
+        .catch(error => {
+          console.error('Error fetching route:', error);
+        });
+    }
+
+    // Sample data (for testing purposes)
+    const from = { latitude: 14.6130735, longitude: 121.0879674 };
+    const to = { latitude: 14.6130111, longitude: 121.0865643 };
+
+    getRouteData(from, to);  // Call this function when needed
+  </script>
 </body>
 </html>

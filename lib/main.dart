@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
         GetPage(
             name: '/vehicle_details', page: () => const VehicleDetailsScreen()),
       ],
-      initialRoute: '/',
+      initialRoute: '/book',
     );
   }
 }
