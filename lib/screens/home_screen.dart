@@ -20,13 +20,20 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<Booking> _currentBookings = [];
   List<Booking> _archivedBookings = [];
 
+  // Refresh bookings when user pulls down
+  Future<void> _refreshBookings() async {
+    await _getCurrentBookings(); // This will refresh the bookings
+    await _getArchivedBookings(); // This will refresh the bookings
+  }
+
   // Function to fetch current bookings
-  Future<void> _getCurrentBookings(String userId) async {
+  Future<void> _getCurrentBookings() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
+      final userId = mainController.getCurrentUser().id;
       final response = await http.post(
         Uri.parse('http://localhost:3000/api/bookings/current'),
         headers: {'Content-Type': 'application/json'},
@@ -54,12 +61,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Function to fetch archived bookings
-  Future<void> _getArchivedBookings(String userId) async {
+  Future<void> _getArchivedBookings() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
+      final userId = mainController.getCurrentUser().id;
       final response = await http.post(
         Uri.parse('http://localhost:3000/api/bookings/archived'),
         headers: {'Content-Type': 'application/json'},
@@ -86,110 +94,178 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _cancelBooking(String bookId) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final payload = {
+        "bookingId": bookId,
+      };
+      // Use GET request and pass the driverId as a query parameter
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/api/booking/user/cancel'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar('Success', 'Booking successfully cancelled!');
+      } else {
+        Get.snackbar('Error', 'Network Error. Please try again.',
+            snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      _refreshBookings();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _getCurrentBookings(mainController.getCurrentUser().id!);
-    _getArchivedBookings(mainController.getCurrentUser().id!);
+    _refreshBookings();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home Screen"),
-        backgroundColor: Colors.blue,
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("In-Progress",
-                          style: Theme.of(context).textTheme.headlineLarge),
-                      _currentBookings.isEmpty
-                          ? const Center(
-                              child: Text("No bookings for you today!"))
-                          : ListView.builder(
-                              itemCount: _currentBookings.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                var booking = _currentBookings[index];
-                                return AnimatedContainer(
-                                  duration: const Duration(seconds: 1),
-                                  curve: Curves.easeInOut,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: Colors.blue, width: 2),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.blue.withOpacity(0.2),
-                                        spreadRadius: 2,
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: BookingCard(
-                                    bookingId: booking.id!,
-                                    customerName:
-                                        "${mainController.getCurrentUser().firstName} ${mainController.getCurrentUser().lastName}",
-                                    date: booking.updatedAt.toString(),
-                                    status: booking.bookingStatus,
-                                    startLocation: booking.startLocation,
-                                    destination: booking.destination,
-                                    driverId: booking.driverId ?? "N/A",
-                                  ),
-                                );
-                              },
-                            ),
-                      const SizedBox(height: 20),
-                      Text("History",
-                          style: Theme.of(context).textTheme.headlineLarge),
-                      _archivedBookings.isEmpty
-                          ? const Center(
-                              child: Text("No History for you today!"))
-                          : ListView.builder(
-                              itemCount: _archivedBookings.length,
-                              shrinkWrap: true,
-                              itemBuilder: (context, index) {
-                                var booking = _archivedBookings[index];
-                                return BookingCard(
-                                  bookingId: booking.id!,
-                                  customerName:
-                                      "${mainController.getCurrentUser().firstName} ${mainController.getCurrentUser().lastName}",
-                                  date: booking.updatedAt.toString(),
-                                  status: booking.bookingStatus,
-                                  startLocation: booking.startLocation,
-                                  destination: booking.destination,
-                                  driverId: booking.driverId ?? "Looking for a driver...",
-                                );
-                              },
-                            ),
-                      const SizedBox(height: 20),
-                      Center(
-                        child: FloatingActionButton.extended(
-                          backgroundColor: Colors.green,
-                          onPressed: () {
-                            Get.to(() => BookingScreen());
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text("Book Now",
-                              style: TextStyle(fontSize: 16)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+        appBar: AppBar(
+          title: const Text("Home Screen"),
+          backgroundColor: Colors.blue,
         ),
-      ),
+        body: RefreshIndicator(
+          onRefresh: _refreshBookings, // This triggers the refresh logic
+          child: SingleChildScrollView(
+            child: Center(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("In-Progress",
+                              style: Theme.of(context).textTheme.headlineLarge),
+                          _currentBookings.isEmpty
+                              ? const Center(
+                                  child: Text("No bookings for you today!"))
+                              : ListView.builder(
+                                  itemCount: _currentBookings.length,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    var booking = _currentBookings[index];
+                                    return AnimatedContainer(
+                                      duration: const Duration(seconds: 1),
+                                      curve: Curves.easeInOut,
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: Colors.blue, width: 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.blue.withOpacity(0.2),
+                                            spreadRadius: 2,
+                                            blurRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                      child: BookingCard(
+                                        onCancel: () {
+                                          _showConfirmationDialog(
+                                              context, booking.id!);
+                                        },
+                                        bookingId: booking.id!,
+                                        customerName:
+                                            "${mainController.getCurrentUser().firstName} ${mainController.getCurrentUser().lastName}",
+                                        date: booking.updatedAt.toString(),
+                                        status: booking.bookingStatus,
+                                        startLocation: booking.startLocation,
+                                        destination: booking.destination,
+                                        driverId: booking.driverId ??
+                                            "Looking for a driver...",
+                                      ),
+                                    );
+                                  },
+                                ),
+                          const SizedBox(height: 20),
+                          Text("History",
+                              style: Theme.of(context).textTheme.headlineLarge),
+                          _archivedBookings.isEmpty
+                              ? const Center(
+                                  child: Text("No History for you today!"))
+                              : ListView.builder(
+                                  itemCount: _archivedBookings.length,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    var booking = _archivedBookings[index];
+                                    return BookingCard(
+                                      bookingId: booking.id!,
+                                      customerName:
+                                          "${mainController.getCurrentUser().firstName} ${mainController.getCurrentUser().lastName}",
+                                      date: booking.updatedAt.toString(),
+                                      status: booking.bookingStatus,
+                                      startLocation: booking.startLocation,
+                                      destination: booking.destination,
+                                      driverId: booking.driverId ??
+                                          "Looking for a driver...",
+                                    );
+                                  },
+                                ),
+                          const SizedBox(height: 20),
+                          Center(
+                            child: FloatingActionButton.extended(
+                              backgroundColor: Colors.green,
+                              onPressed: () {
+                                Get.to(() => BookingScreen());
+                              },
+                              icon: const Icon(Icons.add),
+                              label: const Text("Book Now",
+                                  style: TextStyle(fontSize: 16)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ));
+  }
+
+  Future<void> _showConfirmationDialog(
+      BuildContext context, String bookingId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button to dismiss
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Cancel"),
+          content: Text("Are you sure you want to cancel this booking?"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Confirm'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+                _cancelBooking(bookingId); // Perform cancel action
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -202,16 +278,18 @@ class BookingCard extends StatelessWidget {
   final String startLocation;
   final String destination;
   final String driverId;
+  final VoidCallback? onCancel;
 
-  const BookingCard({super.key, 
-    required this.bookingId,
-    required this.customerName,
-    required this.date,
-    required this.status,
-    required this.startLocation,
-    required this.destination,
-    required this.driverId,
-  });
+  const BookingCard(
+      {super.key,
+      required this.bookingId,
+      required this.customerName,
+      required this.date,
+      required this.status,
+      required this.startLocation,
+      required this.destination,
+      required this.driverId,
+      this.onCancel});
 
   // Function to format the date into a readable format
   String _formatDate(String dateString) {
@@ -232,7 +310,7 @@ class BookingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Reference Number: ${bookingId.substring(0, 5)}', // Show only first 5 characters of booking ID
+              'Reference Number: ${bookingId.substring(bookingId.length - 5)}', // Show only first 5 characters of booking ID
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
@@ -253,6 +331,21 @@ class BookingCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text('Status: $status',
                 style: TextStyle(fontSize: 14, color: Colors.green)),
+            if (onCancel != null) const SizedBox(height: 15),
+            if (onCancel != null)
+              ElevatedButton(
+                onPressed: onCancel,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.orange,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text("Cancel"),
+              )
           ],
         ),
       ),

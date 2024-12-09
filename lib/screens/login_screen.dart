@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _isLoading = true;
           });
 
-          Future.delayed(Duration(seconds: 3), () {
+          Future.delayed(Duration(seconds: 1), () {
             final responseBody = jsonDecode(response.body);
             final resToUser = User.fromJson(responseBody['user']);
             mainController.sucessfulLoggingIn(resToUser);
