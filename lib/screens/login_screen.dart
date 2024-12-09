@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     Future<void> loginHandler() async {
       final url = Uri.parse(
-          'http://localhost:3000/api/login'); // Replace with your API URL
+          'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/login'); // Replace with your API URL
 
       final payload = {
         "email": emailController.text,

@@ -37,7 +37,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       };
       // Use GET request and pass the driverId as a query parameter
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/bookings/accepted'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/bookings/accepted'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -76,7 +77,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     try {
       // Use GET request and pass the driverId as a query parameter
       final response = await http.get(
-        Uri.parse('http://localhost:3000/api/bookings/available'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/bookings/available'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -122,7 +124,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       };
       // Use GET request and pass the driverId as a query parameter
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/booking/driver/accept'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/booking/driver/accept'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -155,7 +158,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       };
       // Use GET request and pass the driverId as a query parameter
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/booking/driver/cancel'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/booking/driver/cancel'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -188,7 +192,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       };
       // Use GET request and pass the driverId as a query parameter
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/booking/driver/finish'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/booking/driver/finish'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );

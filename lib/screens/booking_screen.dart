@@ -114,7 +114,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     Future<void> bookingHandler() async {
       final url = Uri.parse(
-          'http://localhost:3000/api/booking'); // Replace with your API URL
+          'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/booking'); // Replace with your API URL
 
       final payload = {
         "driverId": null,
@@ -719,7 +719,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _fetchPlaces(String query, String type) async {
-    final url = 'http://localhost:3000/places?input=$query';
+    final url =
+        'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/places?input=$query';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -744,7 +745,8 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Future<void> _fetchPlaceDetails(
       String placeId, Function(Map<String, dynamic>) onPlaceSelected) async {
-    final url = 'http://localhost:3000/places/details?place_id=$placeId';
+    final url =
+        'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/places/details?place_id=$placeId';
 
     try {
       final response = await http.get(Uri.parse(url));

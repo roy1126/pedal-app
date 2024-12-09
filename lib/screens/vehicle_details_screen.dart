@@ -41,7 +41,7 @@ class _VehicleDetailsScreenState extends State<VehicleDetailsScreen> {
   Widget build(BuildContext context) {
     Future<void> vehicleDetailHandler() async {
       final url = Uri.parse(
-          'http://localhost:3000/api/vehicle/details'); // Replace with your API URL
+          'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/vehicle/details'); // Replace with your API URL
 
       final vehicleDetails = VehicleDetails(
           model: vehicleModelController.text,

@@ -35,7 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final userId = mainController.getCurrentUser().id;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/bookings/current'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/bookings/current'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': userId}),
       );
@@ -69,7 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final userId = mainController.getCurrentUser().id;
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/bookings/archived'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/bookings/archived'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': userId}),
       );
@@ -105,7 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
       };
       // Use GET request and pass the driverId as a query parameter
       final response = await http.post(
-        Uri.parse('http://localhost:3000/api/booking/user/cancel'),
+        Uri.parse(
+            'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/booking/user/cancel'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );

@@ -59,7 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     Future<void> signupHandler() async {
       final url = Uri.parse(
-          'http://localhost:3000/api/signup'); // Replace with your API URL
+          'https://nameless-waters-42836-7709a51fcf3d.herokuapp.com/api/signup'); // Replace with your API URL
 
       User user = User(
           firstName: firstNameController.text,
