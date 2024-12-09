@@ -1,7 +1,8 @@
-import 'package:pedal_application/model/car.model.dart';
+import 'vehicle.details.model.dart';
+import 'vehicle.documents.model.dart';
 
 class User {
-  String id;
+  String? id;
   String firstName;
   String lastName;
   String phoneNumber;
@@ -9,11 +10,13 @@ class User {
   String email;
   String password;
   bool isDriver;
-  Car? carDetails; // Added carDetails as an instance of Car
+  DateTime? lastLogin;
+  VehicleDetails? vehicleDetails;
+  VehicleDocuments? vehicleDocuments;
 
   // Constructor
   User({
-    required this.id,
+    this.id,
     required this.firstName,
     required this.lastName,
     required this.phoneNumber,
@@ -21,13 +24,15 @@ class User {
     required this.email,
     required this.password,
     required this.isDriver,
-    this.carDetails,
+    this.lastLogin,
+    this.vehicleDetails,
+    this.vehicleDocuments,
   });
 
   // Factory method to create a User object from a JSON map
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
+      id: json['id'] ?? "",
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
@@ -35,9 +40,15 @@ class User {
       email: json['email'] ?? '',
       password: json['password'] ?? '',
       isDriver: json['isDriver'] ?? false,
-      carDetails: json['carDetails'] != null
-          ? Car.fromJson(json['carDetails'])
-          : null, // If carDetails is present, create a Car object
+      lastLogin: json['lastLogin'] != null
+          ? DateTime.parse(json['lastLogin']) // Convert String to DateTime
+          : null, // Handle if lastLogin is null
+      vehicleDetails: json['vehicleDetails'] != null
+          ? VehicleDetails.fromJson(json['vehicleDetails'])
+          : null,
+      vehicleDocuments: json['vehicleDocuments'] != null
+          ? VehicleDocuments.fromJson(json['vehicleDocuments'])
+          : null,
     );
   }
 
@@ -54,8 +65,9 @@ class User {
       'email': email,
       'password': password,
       'isDriver': isDriver,
-      'carDetails':
-          carDetails?.toJson(), // If carDetails is not null, convert it to JSON
+      'lastLogin': lastLogin?.toIso8601String(),
+      'vehicleDetails': vehicleDetails?.toJson(),
+      'vehicleDocuments': vehicleDocuments?.toJson(),
     };
   }
 }

@@ -21,9 +21,16 @@
       "password": "password123",
       "isDriver": true,
       "carDetails": {
-        "carId": 12345,
-        "licenseNumber": 987654321,
-        "insuranceValidity": "2025-12-31",
+        "model": "Toyota Vios 1.5 G MT",
+        "yearModel": 2024,
+        "licenseNumber": "123MJL",
+        "rampOrLiftAvailability": true,
+        "wheelCapacity": 1,
+        "otherAccessibilityFeat": ""
+      },
+      "car": {
+        "insuranceValidity": "12/2028",
+        "hasInspectionCertificate": true,
         "documents": [
           {
             "value": "Registration Certificate",

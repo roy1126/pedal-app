@@ -1,9 +1,14 @@
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pedal_application/controller/main_controller.dart';
+import 'package:pedal_application/model/user-model.dart';
+import 'package:pedal_application/screens/driver_home_screen.dart';
 import 'package:pedal_application/screens/home_screen.dart';
+import 'package:pedal_application/screens/vehicle_details_screen.dart';
+import 'package:pedal_application/screens/vehicle_documents_screen.dart';
 import 'sign_up_screen.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,6 +50,75 @@ class _LoginScreenState extends State<LoginScreen> {
 
     bool isMobile = screenWidth < 600;
 
+    Future<void> loginHandler() async {
+      final url = Uri.parse(
+          'http://localhost:3000/api/login'); // Replace with your API URL
+
+      final payload = {
+        "email": emailController.text,
+        "password": passwordController.text,
+      };
+
+      // Send POST request
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type':
+                'application/json', // Required for sending JSON data
+          },
+          body: jsonEncode(payload), // Convert requestData to JSON
+        );
+
+        // Check the response status
+        if (response.statusCode == 200) {
+          setState(() {
+            _isLoading = true;
+          });
+
+          Future.delayed(Duration(seconds: 3), () {
+            final responseBody = jsonDecode(response.body);
+            final resToUser = User.fromJson(responseBody['user']);
+            mainController.sucessfulLoggingIn(resToUser);
+
+            if (responseBody['user']['isDriver'] == true &&
+                responseBody['user']['vehicleDetails'] == null) {
+              Get.to(() => VehicleDetailsScreen());
+            } else if (responseBody['user']['isDriver'] == true &&
+                responseBody['user']['vehicleDocuments'] == null) {
+              Get.to(() => VehicleDocumentsScreen());
+            } else {
+              if (mainController.getCurrentUser().isDriver) {
+                Get.to(() => DriverHomeScreen());
+              } else {
+                Get.to(() => HomeScreen());
+              }
+            }
+            setState(() {
+              _isLoading = false;
+            });
+          });
+        } else {
+          final errMessage = response.statusCode == 400
+              ? "User not found"
+              : "Invalid credentials";
+
+          Get.snackbar(
+            'Error',
+            errMessage,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      } catch (e) {
+        print(e);
+        Get.snackbar(
+          'Error',
+          e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -61,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                       height:
                           10), // Adds some spacing between the spinner and text
-                  Text("Loading..."),
+                  Text("Logging in..."),
                 ],
               ) // Shows the loading spinner
             : ConstrainedBox(
@@ -158,28 +232,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                       'Please enter both email and password.',
                                       snackPosition: SnackPosition.BOTTOM,
                                     );
-                                  } else {
-                                    setState(() {
-                                      _isLoading = true;
-                                      mainController.login(email, password);
-                                    });
 
-                                    Future.delayed(Duration(seconds: 1), () {
-                                      if (mainController.isLoggedIn()) {
-                                        Get.to(() => HomeScreen());
-                                      } else {
-                                        Get.snackbar(
-                                          'Error',
-                                          'User is not found',
-                                          snackPosition: SnackPosition.BOTTOM,
-                                        );
-                                      }
-
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                    });
+                                    return;
                                   }
+
+                                  loginHandler();
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.tealAccent[700],

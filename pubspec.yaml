@@ -24,6 +24,7 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   flutter_svg: ^2.0.16
   geocoding: ^3.0.0 # or the latest version
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:

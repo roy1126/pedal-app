@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:pedal_application/screens/home_screen.dart';
 
 import '../controller/main_controller.dart';
 
@@ -19,10 +20,12 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController _noteController = TextEditingController();
   bool _isPWD = false;
+  bool _showProceedBtn = true;
   String _selectedPWDType = '';
   final Random random = Random();
   final MainController mainController = Get.put(MainController());
   bool _isLoading = false;
+  bool _isLoadingConfirmBooking = false;
   late GoogleMapController _mapController;
   LatLng? _initialPosition; // Make this dynamic
   final Set<Marker> _markers = <Marker>{};
@@ -35,6 +38,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
   String _eta = "";
   String _price = "";
+
+  double _etaMinutes = 0;
+  double _priceValue = 0;
 
   LatLng? _fromLocation;
   LatLng? _toLocation;
@@ -105,9 +111,70 @@ class _BookingScreenState extends State<BookingScreen> {
     containerHeight =
         containerHeight > mobileHeight ? mobileHeight : containerHeight;
 
-    double containerWidth = screenWidth < mobileWidth
-        ? screenWidth
-        : mobileWidth; // Adjust width for smaller screens
+    double containerWidth = mobileWidth; // Fixed width for mobile
+
+    Future<void> bookingHandler() async {
+      final url = Uri.parse(
+          'http://localhost:3000/api/booking'); // Replace with your API URL
+
+      final payload = {
+        "driverId": null,
+        "customerId": mainController.getCurrentUser().id,
+        "isPwd": _isPWD,
+        "pwdType": _selectedPWDType,
+        "notes": "",
+        "dateCompleted": null,
+        "isActive": true,
+        "bookingStatus": "IN-PROGRESS",
+        "eta": _etaMinutes,
+        "price": _priceValue,
+        "startLocation": _fromController.text,
+        "destination": _toController.text,
+      };
+
+      // Send POST request
+      try {
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type':
+                'application/json', // Required for sending JSON data
+          },
+          body: jsonEncode(payload), // Convert requestData to JSON
+        );
+
+        // Check the response status
+        if (response.statusCode == 200) {
+          setState(() {
+            _isLoadingConfirmBooking = true;
+          });
+
+          Future.delayed(Duration(seconds: 3), () {
+            Get.snackbar(
+                'Success', // Title
+                'Book Confirmed successfully!');
+            setState(() {
+              _isLoadingConfirmBooking = false;
+            });
+            Get.to(() => HomeScreen());
+          });
+        } else {
+          print("ERROR HERE!");
+          Get.snackbar(
+            'Error',
+            "User not found",
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      } catch (e) {
+        print(e);
+        Get.snackbar(
+          'Error',
+          e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -116,8 +183,8 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
       body: Center(
         child: Container(
-          width: containerWidth, // Fixed width adjusted for small screens
-          height: containerHeight, // Dynamic height, adjusted like login page
+          width: mobileWidth, // Fixed width similar to login page
+          height: 800, // Dynamic height, adjusted like login page
           padding: const EdgeInsets.all(20.0), // Optional padding for better UI
           child: SingleChildScrollView(
             child: Column(
@@ -169,7 +236,168 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                 ),
                 const SizedBox(height: 5), // Space between the map and the form
-                _buildContent(), // Your existing content (location fields, summary, etc.)
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    children: [
+                      _buildLocationFields(),
+                      const SizedBox(height: 50),
+                      Row(
+                        children: [
+                          const Text("Are you a PWD?"),
+                          Radio<bool>(
+                            value: true,
+                            groupValue: _isPWD,
+                            onChanged: (value) {
+                              setState(() {
+                                _isPWD = value!;
+                                if (_isPWD) {
+                                  _showPWDDialog(); // Show PWD selection dialog
+                                }
+
+                                if (value != _isPWD) {
+                                  _showProceedBtn = true;
+                                }
+                              });
+                            },
+                          ),
+                          const Text("Yes"),
+                          Radio<bool>(
+                            value: false,
+                            groupValue: _isPWD,
+                            onChanged: (value) {
+                              setState(() {
+                                _isPWD = value!;
+                              });
+                            },
+                          ),
+                          const Text("No"),
+                        ],
+                      ),
+                      if (_showProceedBtn) const SizedBox(height: 30),
+                      if (_showProceedBtn)
+                        ElevatedButton(
+                          onPressed: _proceedBooking,
+                          child: const Text("Proceed"),
+                        ),
+                      if (!_showProceedBtn) const SizedBox(height: 30),
+                      if (!_showProceedBtn)
+                        Container(
+                          width: 350, // Set the width of the container
+                          padding: EdgeInsets.all(
+                              16), // Add padding inside the container
+                          decoration: BoxDecoration(
+                            color: Colors
+                                .white, // Background color of the container
+                            borderRadius:
+                                BorderRadius.circular(16), // Rounded corners
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 1,
+                                blurRadius: 8,
+                                offset: Offset(0, 4), // Shadow position
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment
+                                .start, // Align text to the start
+                            children: [
+                              Text(
+                                'Booking Details',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              _isLoading
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center, // Vertically center
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .center, // Horizontally center
+                                      children: [
+                                        CircularProgressIndicator(
+                                          strokeWidth: 8,
+                                        ),
+                                        SizedBox(
+                                            height:
+                                                10), // Adds some spacing between the spinner and text
+                                        Text("Calculating ETA and cost..."),
+                                      ],
+                                    ) // Shows the loading spinner
+                                  : Column(
+                                      children: [
+                                        SizedBox(
+                                            height:
+                                                16), // Add spacing between title and content
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'ETA',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Text(
+                                              '15 mins', // Example ETA
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Divider(
+                                          color: Colors.grey,
+                                          thickness: 1,
+                                          height: 20,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              _eta,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Text(
+                                              _price, // Example cost
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    )
+                            ],
+                          ),
+                        ),
+                      if (!_showProceedBtn && !_isLoading)
+                        const SizedBox(height: 30),
+                      if (!_showProceedBtn && !_isLoading)
+                        ElevatedButton(
+                          onPressed: () {
+                            _showConfirmationDialog(context, bookingHandler);
+                          },
+                          child: const Text("Confirm Booking"),
+                        ),
+                    ],
+                  ),
+                )
+                // Your existing content (location fields, summary, etc.)
               ],
             ),
           ),
@@ -211,105 +439,157 @@ class _BookingScreenState extends State<BookingScreen> {
     "Other" // Add "Other" option if needed
   ];
   String? otherInput; // To hold input if "Other" is selected
+  Future<void> _showPWDDialog() async {
+    // List of all PWD types
+    List<String> pwdTypes = [
+      "Vision Impairment",
+      "Hearing Impairment",
+      "Mental Illness",
+      "Intellectual Disability",
+      "Learning Disability",
+      "Autism Spectrum Disorder",
+      "Cerebral Palsy",
+      "Orthopedic Disability",
+      "Psychosocial Disability",
+      "Blindness",
+      "Disability Caused by Chronic Illness",
+      "Leprosy Cured",
+      "Locomotor Disability",
+      "Muscular Dystrophy",
+      "Physical Disability",
+      "Acquired Brain Injury",
+      "Attention Deficit Hyperactivity Disorder",
+      "Chronic Illness",
+      "Dwarfism",
+      "Hemophilia",
+      "Multiple Disabilities",
+      "Sickle Cell Disease",
+      "Speech Impairment",
+      "Thalassemia",
+      "Senior Citizen", // Keep other types as needed
+      "Person with Disability",
+      "Pregnant Woman",
+      "Child Below 5 Years",
+      "Other" // Add "Other" optio
+    ];
+    String? otherInput; // To hold input if "Other" is selected
 
-  Widget _buildContent() {
-    return _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : Padding(
-            padding: const EdgeInsets.all(10.0),
+    return showDialog<void>(
+      context: context,
+      barrierDismissible:
+          false, // Ensure the dialog cannot be dismissed by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select PWD Type'),
+          content: SingleChildScrollView(
+            // Ensure it can scroll if the list is long
             child: Column(
-              children: [
-                _buildLocationFields(),
-                const SizedBox(height: 10),
-                _buildSummary(),
-                Row(
-                  children: [
-                    const Text("Are you a PWD?"),
-                    Radio<bool>(
-                      value: true,
-                      groupValue: _isPWD,
-                      onChanged: (value) {
-                        setState(() {
-                          _isPWD = value!;
-                        });
-                      },
-                    ),
-                    const Text("Yes"),
-                    Radio<bool>(
-                      value: false,
-                      groupValue: _isPWD,
-                      onChanged: (value) {
-                        setState(() {
-                          _isPWD = value!;
-                        });
-                      },
-                    ),
-                    const Text("No"),
-                  ],
-                ),
-                // Dropdown for selecting PWD type
-                if (_isPWD)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DropdownButtonFormField<String>(
-                        value:
-                            _selectedPWDType.isEmpty ? null : _selectedPWDType,
-                        decoration: const InputDecoration(
-                          labelText: 'Select PWD Type',
-                        ),
-                        items: pwdTypes.map((type) {
-                          return DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(type),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedPWDType = value!;
-                            // Clear other input when PWD type changes
-                            if (_selectedPWDType != "Other") {
-                              otherInput =
-                                  null; // Clear input when another option is selected
-                            }
-                          });
-                        },
-                      ),
-
-                      // If "Other" is selected, show an input field
-                      if (_selectedPWDType == "Other")
-                        TextField(
-                          onChanged: (value) {
-                            setState(() {
-                              otherInput = value;
-                            });
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                // ListTile for each PWD type
+                ...pwdTypes.map((type) {
+                  return ListTile(
+                    title: Text(type),
+                    onTap: () {
+                      if (type == "Other") {
+                        // Show the text field if "Other" is selected
+                        showDialog<void>(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Enter Custom PWD Type'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  TextField(
+                                    maxLength:
+                                        20, // Limit the input to 20 characters
+                                    onChanged: (value) {
+                                      otherInput = value;
+                                    },
+                                    decoration: const InputDecoration(
+                                      labelText: 'Custom PWD Type',
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedPWDType = otherInput ?? '';
+                                      });
+                                      Navigator.of(context)
+                                          .pop(); // Close the "Other" input dialog
+                                      Navigator.of(context)
+                                          .pop(); // Close the main dialog
+                                    },
+                                    child: const Text('Submit'),
+                                  ),
+                                ],
+                              ),
+                            );
                           },
-                          maxLength: 20, // Limit input to 20 characters
-                          decoration: const InputDecoration(
-                            labelText: 'Please specify PWD type',
-                            counterText: '', // Hide the default character count
-                          ),
-                        ),
-                    ],
-                  ),
-                // Add the note field for the driver
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _noteController,
-                  maxLength: 500, // Limit to 500 characters
-                  maxLines: 3, // Allow multiple lines
-                  decoration: const InputDecoration(
-                    labelText: 'Note to the driver (max 500 characters)',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: _confirmBooking,
-                  child: const Text("Confirm Booking"),
-                ),
+                        );
+                      } else {
+                        // Select the predefined PWD type
+                        setState(() {
+                          _selectedPWDType = type;
+                        });
+                        Navigator.of(context).pop(); // Close the dialog
+                      }
+                    },
+                  );
+                }),
               ],
             ),
-          );
+          ),
+        );
+      },
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context, Function handler) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _isLoadingConfirmBooking
+            ? Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Vertically center
+                crossAxisAlignment:
+                    CrossAxisAlignment.center, // Horizontally center
+                children: [
+                  CircularProgressIndicator(
+                    strokeWidth: 8,
+                  ),
+                  SizedBox(
+                      height:
+                          10), // Adds some spacing between the spinner and text
+                  Text("Confirm Booking..."),
+                ],
+              ) // Shows the loading spinner
+            : AlertDialog(
+                title: Text('Confirm Booking'),
+                content: Text('Are you sure you want to confirm the booking?'),
+                actions: <Widget>[
+                  // Cancel button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Close the dialog
+                    },
+                    child: Text('Cancel'),
+                  ),
+                  // Confirm button
+                  TextButton(
+                    onPressed: () {
+                      handler();
+                    },
+                    child: Text('Confirm'),
+                  ),
+                ],
+              );
+      },
+    );
   }
 
   Widget _buildLocationFields() {
@@ -324,7 +604,12 @@ class _BookingScreenState extends State<BookingScreen> {
               child: _buildLocationField(
                 controller: _fromController,
                 hint: "Enter pickup location",
-                onChanged: (value) => _fetchPlaces(value, "from"),
+                onChanged: (value) {
+                  _fetchPlaces(value, "from");
+                  setState(() {
+                    _showProceedBtn = true;
+                  });
+                },
                 suggestions: _fromPlaceSuggestions,
                 onSelectSuggestion: (place) async {
                   _fetchPlaceDetails(place['place_id'], (details) async {
@@ -359,7 +644,12 @@ class _BookingScreenState extends State<BookingScreen> {
               child: _buildLocationField(
                 controller: _toController,
                 hint: "Enter drop-off location",
-                onChanged: (value) => _fetchPlaces(value, "to"),
+                onChanged: (value) {
+                  _fetchPlaces(value, "to");
+                  setState(() {
+                    _showProceedBtn = true;
+                  });
+                },
                 suggestions: _toPlaceSuggestions,
                 onSelectSuggestion: (place) async {
                   _fetchPlaceDetails(place['place_id'], (details) async {
@@ -429,7 +719,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _fetchPlaces(String query, String type) async {
-    final url = 'http://localhost:4000/places?input=$query';
+    final url = 'http://localhost:3000/places?input=$query';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -454,7 +744,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Future<void> _fetchPlaceDetails(
       String placeId, Function(Map<String, dynamic>) onPlaceSelected) async {
-    final url = 'http://localhost:4000/places/details?place_id=$placeId';
+    final url = 'http://localhost:3000/places/details?place_id=$placeId';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -476,21 +766,11 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  Widget _buildSummary() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(_eta,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        Text(_price,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-
-  void _confirmBooking() {
-    if (_fromLocation == null || _toLocation == null) {
+  void _proceedBooking() {
+    if (_fromController.text == '' ||
+        _fromLocation == null ||
+        _toController.text == '' ||
+        _toLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please select both pickup and drop-off locations."),
@@ -537,11 +817,14 @@ class _BookingScreenState extends State<BookingScreen> {
         }
 
         _isLoading = false;
+        _showProceedBtn = false;
       });
     }).catchError((e) {
       setState(() {
         _isLoading = false;
       });
+
+      print(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error fetching travel details.")),
       );
@@ -588,10 +871,17 @@ class _BookingScreenState extends State<BookingScreen> {
       final distance = (segments[0]['distance'] ?? 0).toDouble();
       final duration = (segments[0]['duration'] ?? 0).toDouble();
 
-      final eta = "${(duration / 60).toStringAsFixed(0)} minutes";
+      setState(() {
+        _etaMinutes = (duration / 60).toDouble();
+        _priceValue = (baseFare +
+                ratePerKm * (distance / 1000) +
+                ratePerMinute * (duration / 60))
+            .toDouble();
+      });
 
-      final price =
-          "₱${(baseFare + ratePerKm * (distance / 1000) + ratePerMinute * (duration / 60)).toStringAsFixed(0)}";
+      final eta = "${_etaMinutes.toStringAsFixed(0)} minutes";
+
+      final price = "₱${_priceValue.toStringAsFixed(0)}";
 
       final routePoints =
           (data['features'][0]['geometry']['coordinates'] as List)
